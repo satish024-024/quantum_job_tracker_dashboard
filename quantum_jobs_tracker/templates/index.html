@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Jobs Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="quantum-container">
+        <header>
+            <h1>Quantum Jobs Tracker</h1>
+            <p class="quantum-subtitle">Tracking IBM Quantum Computing jobs with quantum-native visualization</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="section backends">
+                <h2>Quantum Backends</h2>
+                <div class="quantum-grid" id="backends-container">
+                    <div class="loading">Loading quantum backend data...</div>
+                </div>
+            </div>
+
+            <div class="section jobs">
+                <h2>Active Quantum Jobs</h2>
+                <div class="quantum-table-container">
+                    <table class="quantum-table" id="jobs-table">
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Backend</th>
+                                <th>Status</th>
+                                <th>Qubits</th>
+                                <th>Start Time</th>
+                                <th>Est. Completion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobs-body">
+                            <tr>
+                                <td colspan="6" class="loading">Loading quantum jobs data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="section qubit-state">
+                <h2>Quantum System State</h2>
+                <div class="quantum-visualization">
+                    <div class="visualization-container">
+                        <div class="visualization-panel">
+                            <h3>State Histogram</h3>
+                            <div id="histogram-visualization">
+                                <div class="loading">Loading quantum state...</div>
+                            </div>
+                        </div>
+                        <div class="visualization-panel">
+                            <h3>Bloch Sphere</h3>
+                            <div id="bloch-visualization">
+                                <div class="loading">Loading quantum state...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quantum-stats">
+                        <div id="qubit-stats">
+                            <div class="stat">
+                                <span class="label">Total Backends:</span>
+                                <span class="value" id="total-backends">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Active Backends:</span>
+                                <span class="value" id="active-backends">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Running Jobs:</span>
+                                <span class="value" id="running-jobs">0</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Queued Jobs:</span>
+                                <span class="value" id="queued-jobs">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section quantum-circuit">
+                <h2>Quantum Circuit Representation</h2>
+                <div id="quantum-circuit-visualization">
+                    <canvas id="superposition-canvas"></canvas>
+                </div>
+                <p class="circuit-explanation">
+                    This quantum circuit represents the current state of the quantum computing system.
+                    Each qubit encodes information about backend availability and job status.
+                </p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Quantum Jobs Tracker - Powered by Qiskit</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Core packages
+qiskit>=2.0.0
+qiskit-aer>=0.11.0
+qiskit-ibm-provider>=0.5.0
+qiskit-ibm-runtime>=0.41.0
+Flask>=2.0.0
+requests>=2.25.0
+numpy>=1.20.0
+matplotlib>=3.4.0
+
+# Visualization
+pylatexenc>=2.10
+
+# Configuration
+python-dotenv>=1.0.0
