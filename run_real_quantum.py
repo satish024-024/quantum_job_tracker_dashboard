@@ -17,7 +17,7 @@ from quantum_jobs_tracker.real_quantum_app import app
 if __name__ == '__main__':
     print("Starting Quantum Jobs Tracker with Real Quantum Computing Support...")
     print("To connect to real IBM Quantum computers, add your API token in quantum_jobs_tracker/real_quantum_app.py")
-    print("Open your browser and navigate to http://localhost:5000")
-    
-    # Start the Flask app
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    print(f"Open your browser and navigate to http://localhost:{port}")
+    # Start the Flask app on 0.0.0.0 and correct port for Render
+    app.run(host="0.0.0.0", port=port, debug=True)
