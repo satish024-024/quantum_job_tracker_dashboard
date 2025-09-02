@@ -706,7 +706,7 @@ class QuantumDashboard {
                     '<div class="sim-data-badge">🔄 Simulator</div>'
                 }
             </div>
-        `).join('') : '<div class="empty-widget">No backends available.</div>';
+        `).join('') : '<div class="empty-widget">No IBM Quantum backends available. Please connect to IBM Quantum to see real backends.</div>';
 
         // Show the container and hide loading spinner
         const loading = document.getElementById('backends-loading');
@@ -745,7 +745,7 @@ class QuantumDashboard {
             content.style.display = 'block';
         }
         if (!this.state.jobs || this.state.jobs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No jobs found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No IBM Quantum jobs found. Please connect to IBM Quantum to see real jobs.</td></tr>`;
             // Always show content if no jobs
             if (content) content.style.display = 'block';
             return;

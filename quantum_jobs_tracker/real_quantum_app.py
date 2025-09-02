@@ -1184,35 +1184,12 @@ def get_backends():
             "real_data": False
         }), 401
     
-    # Get real backend data from IBM Quantum
+    # Get real backend data from IBM Quantum - NO FALLBACK
     if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
-        # Return fallback data when not connected but user has token
-        fallback_backends = [
-            {
-                "name": "ibm_brisbane",
-                "status": "maintenance",
-                "pending_jobs": 0,
-                "operational": False,
-                "num_qubits": 127,
-                "backend_version": "1.0",
-                "last_update_date": "2024-01-01",
-                "connection_status": "disconnected"
-            },
-            {
-                "name": "ibm_torino", 
-                "status": "maintenance",
-                "pending_jobs": 0,
-                "operational": False,
-                "num_qubits": 127,
-                "backend_version": "1.0",
-                "last_update_date": "2024-01-01",
-                "connection_status": "disconnected"
-            }
-        ]
         return jsonify({
             "error": "Not connected to IBM Quantum",
-            "message": "Please check your API token and network connection",
-            "backends": fallback_backends,
+            "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum",
+            "backends": [],
             "real_data": False,
             "connection_status": "disconnected"
         }), 503
@@ -1277,29 +1254,10 @@ def get_jobs():
     try:
         # Check if we have a valid connection
         if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
-            # Return fallback data when not connected but user has token
-            fallback_jobs = [
-                {
-                    "id": "d2pr1a2b3c4d5e6f",
-                    "backend": "ibm_brisbane",
-                    "status": "DONE",
-                    "num_qubits": 5,
-                    "progress": 100,
-                    "connection_status": "disconnected"
-                },
-                {
-                    "id": "d2pr2b3c4d5e6f7g",
-                    "backend": "ibm_torino", 
-                    "status": "DONE",
-                    "num_qubits": 5,
-                    "progress": 100,
-                    "connection_status": "disconnected"
-                }
-            ]
             return jsonify({
                 "error": "Not connected to IBM Quantum",
-                "message": "Please check your API token and network connection",
-                "jobs": fallback_jobs,
+                "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum",
+                "jobs": [],
                 "real_data": False,
                 "connection_status": "disconnected"
             }), 503
@@ -1580,26 +1538,18 @@ def get_dashboard_state():
     try:
         # Check if we have a valid connection
         if not hasattr(app, 'quantum_manager') or not app.quantum_manager.is_connected:
-            # Return fallback dashboard state when not connected but user has token
-            fallback_state = {
+            return jsonify({
+                "error": "Not connected to IBM Quantum",
+                "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum",
                 "active_backends": 0,
-                "inactive_backends": 2,
+                "inactive_backends": 0,
                 "running_jobs": 0,
                 "queued_jobs": 0,
                 "total_jobs": 0,
                 "connection_status": "disconnected",
-                "last_update": "2024-01-01T00:00:00Z",
-                "quantum_state": {
-                    "superposition": False,
-                    "entanglement": False,
-                    "measurement": "unknown"
-                },
                 "using_real_quantum": False,
-                "real_data": False,
-                "error": "Not connected to IBM Quantum",
-                "message": "Please check your API token and network connection"
-            }
-            return jsonify(fallback_state), 503
+                "real_data": False
+            }), 503
         
         # Get real metrics from quantum manager
         quantum_manager = app.quantum_manager
@@ -1804,31 +1754,14 @@ def get_circuit_data():
     try:
         # Check if we have a quantum manager with real connection
         if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
-            # Return fallback circuit data when not connected but user has token
-            fallback_circuit = {
-                "circuit": {
-                    "qubits": 5,
-                    "gates": [
-                        {"name": "h", "qubits": [0], "position": 0},
-                        {"name": "cx", "qubits": [0, 1], "position": 1},
-                        {"name": "h", "qubits": [2], "position": 2},
-                        {"name": "cx", "qubits": [1, 2], "position": 3},
-                        {"name": "measure", "qubits": [0, 1, 2], "position": 4}
-                    ],
-                    "depth": 5,
-                    "width": 3
-                },
-                "backend": {
-                    "name": "ibm_brisbane",
-                    "num_qubits": 127,
-                    "operational": False
-                },
-                "real_data": False,
-                "connection_status": "disconnected",
+            return jsonify({
                 "error": "Not connected to IBM Quantum",
-                "message": "Please check your API token and network connection"
-            }
-            return jsonify(fallback_circuit), 503
+                "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum",
+                "circuit": None,
+                "backend": None,
+                "real_data": False,
+                "connection_status": "disconnected"
+            }), 503
         
         # Get real backend information to create appropriate circuit
         quantum_manager = app.quantum_manager
@@ -2321,78 +2254,34 @@ def get_real_features_summary():
             "message": str(e)
         }), 500
 
-# Initialize quantum manager with fallback mode
+# Initialize quantum manager - NO FALLBACK, REAL DATA ONLY
 @app.before_request
 def initialize_quantum_manager():
-    """Initialize quantum manager before first request"""
-    try:
-        print("🔄 Initializing quantum manager...")
-        # Create quantum manager in fallback mode initially
-        app.quantum_manager = QuantumBackendManager()
-        print("✅ Quantum manager initialized in fallback mode")
-    except Exception as e:
-        print(f"❌ Error initializing quantum manager: {e}")
-        # Create a minimal fallback manager
-        class FallbackQuantumManager:
-            def __init__(self):
-                self.is_connected = False
-                self.backend_data = [
-                    {
-                        "name": "ibm_brisbane",
-                        "status": "active",
-                        "pending_jobs": 0,
-                        "operational": True,
-                        "num_qubits": 127,
-                        "backend_version": "1.0",
-                        "last_update_date": "2024-01-01"
-                    },
-                    {
-                        "name": "ibm_torino", 
-                        "status": "active",
-                        "pending_jobs": 0,
-                        "operational": True,
-                        "num_qubits": 127,
-                        "backend_version": "1.0",
-                        "last_update_date": "2024-01-01"
-                    }
-                ]
-                self.job_data = [
-                    {
-                        "id": "d2pr1a2b3c4d5e6f",
-                        "backend": "ibm_brisbane",
-                        "status": "DONE",
-                        "num_qubits": 5,
-                        "progress": 100
-                    },
-                    {
-                        "id": "d2pr2b3c4d5e6f7g",
-                        "backend": "ibm_brisbane", 
-                        "status": "DONE",
-                        "num_qubits": 5,
-                        "progress": 100
-                    }
-                ]
-            
-            def get_backends(self):
-                return self.backend_data
-            
-            def get_real_jobs(self):
-                return self.job_data
-            
-            def update_data(self):
-                pass
-        
-        app.quantum_manager = FallbackQuantumManager()
-        print("✅ Fallback quantum manager created")
+    """Initialize quantum manager before first request - REAL DATA ONLY"""
+    if not hasattr(app, 'quantum_manager') or app.quantum_manager is None:
+        print("🔄 Initializing quantum manager for real IBM Quantum data only...")
+        app.quantum_manager = None  # Will be set when user provides token
+        print("✅ Quantum manager ready for real IBM Quantum connection")
 
 
 
 @app.route('/api/results')
 def get_results():
     """Get measurement results data"""
+    # Check if user has provided a token
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return jsonify({
+            "error": "Authentication required",
+            "message": "Please provide your IBM Quantum API token first"
+        }), 401
+    
     try:
-        if not hasattr(app, 'quantum_manager') or not app.quantum_manager:
-            return jsonify({"error": "Quantum manager not initialized"}), 500
+        if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
+            return jsonify({
+                "error": "Not connected to IBM Quantum",
+                "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum"
+            }), 503
 
         # Get real measurement results from quantum jobs
         results_data = app.quantum_manager.get_measurement_results()
@@ -2404,9 +2293,20 @@ def get_results():
 @app.route('/api/performance')
 def get_performance():
     """Get performance metrics data"""
+    # Check if user has provided a token
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return jsonify({
+            "error": "Authentication required",
+            "message": "Please provide your IBM Quantum API token first"
+        }), 401
+    
     try:
-        if not hasattr(app, 'quantum_manager') or not app.quantum_manager:
-            return jsonify({"error": "Quantum manager not initialized"}), 500
+        if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
+            return jsonify({
+                "error": "Not connected to IBM Quantum",
+                "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum"
+            }), 503
 
         # Get real performance data
         performance_data = app.quantum_manager.get_performance_metrics()
@@ -2418,9 +2318,20 @@ def get_performance():
 @app.route('/api/quantum_state')
 def get_quantum_state():
     """Get current quantum state data"""
+    # Check if user has provided a token
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return jsonify({
+            "error": "Authentication required",
+            "message": "Please provide your IBM Quantum API token first"
+        }), 401
+    
     try:
-        if not hasattr(app, 'quantum_manager') or not app.quantum_manager:
-            return jsonify({"error": "Quantum manager not initialized"}), 500
+        if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
+            return jsonify({
+                "error": "Not connected to IBM Quantum",
+                "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum"
+            }), 503
 
         # Get real quantum state
         quantum_state = app.quantum_manager.get_current_quantum_state()
