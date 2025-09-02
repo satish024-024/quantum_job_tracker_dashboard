@@ -577,6 +577,38 @@ body {
     background: var(--warning);
 }
 
+.status-indicator.error {
+    background: var(--danger);
+}
+
+.status-indicator.unknown {
+    background: var(--secondary);
+}
+
+.connection-status.connected {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.connection-status.disconnected {
+    background: rgba(241, 196, 15, 0.1);
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.connection-status.error {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.connection-status.unknown {
+    background: rgba(155, 89, 182, 0.1);
+    border-color: var(--secondary);
+    color: var(--secondary);
+}
+
 /* Header Right Section */
 .header-right {
     display: flex;
