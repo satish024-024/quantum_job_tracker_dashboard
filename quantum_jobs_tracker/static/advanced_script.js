@@ -141,14 +141,65 @@ class QuantumDashboard {
             closeCircuitBtn.addEventListener('click', () => this.hideCircuitFullscreen());
         }
 
+        // Initialize loading animations for all widgets
+        this.initializeLoadingAnimations();
+
         // Load real data immediately
         await this.loadAllData();
 
         // Start animations and real-time updates
         this.startAnimations();
         this.startRealTimeUpdates();
+        this.startAutoReconnection();
 
         console.log('✅ Dashboard initialization complete');
+    }
+
+    initializeLoadingAnimations() {
+        console.log('🎬 Initializing loading animations...');
+        
+        // Initialize all loading screens
+        const loadingScreens = [
+            'backends-loading', 'jobs-loading', 'circuit-loading', 
+            'entanglement-loading', 'results-loading', 'bloch-loading',
+            'quantum-state-loading', 'performance-loading'
+        ];
+        
+        loadingScreens.forEach(screenId => {
+            const screen = document.getElementById(screenId);
+            if (screen) {
+                screen.style.display = 'flex';
+                this.animateProgressBar(screenId);
+            }
+        });
+        
+        // Add loading class to metric cards
+        const metricCards = document.querySelectorAll('.metric-card');
+        metricCards.forEach(card => {
+            card.classList.add('loading');
+        });
+        
+        // Set connection status to connecting
+        const connectionStatus = document.getElementById('connection-status');
+        if (connectionStatus) {
+            connectionStatus.classList.add('connecting');
+        }
+    }
+
+    animateProgressBar(loadingScreenId) {
+        const progressBar = document.getElementById(loadingScreenId.replace('-loading', '-progress'));
+        if (progressBar) {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+                progressBar.style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 200);
+        }
     }
 
     setupEventListeners() {
@@ -521,6 +572,483 @@ class QuantumDashboard {
             this.state.isConnected = false;
             this.state.realDataAvailable = false;
         }
+    }
+
+    async loadAllData() {
+        console.log('🔄 Loading all real-time data...');
+        
+        try {
+            // Load real-time data from the new endpoint
+            const response = await fetch('/api/real-time-data');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log('📊 Real-time data response:', data);
+            
+            if (data.real_data) {
+                this.state.isConnected = true;
+                this.state.realDataAvailable = true;
+                
+                // Update all widgets with real data
+                this.updateMetrics(data.summary_metrics);
+                this.updateBackends(data.backends);
+                this.updateJobs(data.jobs);
+                this.updateQuantumState(data.quantum_state);
+                this.updatePerformanceMetrics(data.performance_metrics);
+                this.updateEntanglementData(data.entanglement_data);
+                this.updateMeasurementResults(data.measurement_results);
+                
+                // Update connection status
+                this.updateConnectionStatus('connected');
+                
+                console.log('✅ All real-time data loaded successfully');
+            } else {
+                throw new Error('No real data available');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading real-time data:', error);
+            this.handleDataLoadError(error);
+        }
+    }
+
+    updateMetrics(metrics) {
+        console.log('📊 Updating metrics:', metrics);
+        
+        // Update metric cards
+        const metricElements = {
+            'active-backends-value': metrics.active_backends,
+            'total-jobs-value': metrics.total_jobs,
+            'running-jobs-value': metrics.running_jobs,
+            'queued-jobs-value': metrics.queued_jobs
+        };
+        
+        Object.entries(metricElements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+                element.parentElement.classList.remove('loading');
+            }
+        });
+    }
+
+    updateBackends(backends) {
+        console.log('🖥️ Updating backends:', backends);
+        
+        const backendsContent = document.getElementById('backends-content');
+        const backendsLoading = document.getElementById('backends-loading');
+        
+        if (backendsContent && backends) {
+            backendsContent.innerHTML = backends.map(backend => `
+                <div class="backend-item">
+                    <div class="backend-info">
+                        <h4>${backend.name}</h4>
+                        <span class="backend-status ${backend.operational ? 'operational' : 'inactive'}">
+                            ${backend.operational ? 'Operational' : 'Inactive'}
+                        </span>
+                    </div>
+                    <div class="backend-details">
+                        <span>Qubits: ${backend.num_qubits}</span>
+                        <span>Jobs: ${backend.pending_jobs}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            backendsContent.style.display = 'block';
+        }
+        
+        if (backendsLoading) {
+            backendsLoading.style.display = 'none';
+        }
+    }
+
+    updateJobs(jobs) {
+        console.log('📋 Updating jobs:', jobs);
+        
+        const jobsBody = document.getElementById('jobs-body');
+        const jobsLoading = document.getElementById('jobs-loading');
+        
+        if (jobsBody && jobs) {
+            jobsBody.innerHTML = jobs.map(job => `
+                <tr>
+                    <td>${job.id.substring(0, 12)}...</td>
+                    <td>${job.backend}</td>
+                    <td><span class="status-badge ${job.status.toLowerCase()}">${job.status}</span></td>
+                    <td>${job.qubits}</td>
+                    <td><div class="progress-bar"><div class="progress" style="width: ${job.progress}%"></div></div></td>
+                    <td><button class="action-btn" onclick="viewJob('${job.id}')"><i class="fas fa-eye"></i></button></td>
+                </tr>
+            `).join('');
+        }
+        
+        if (jobsLoading) {
+            jobsLoading.style.display = 'none';
+        }
+    }
+
+    updateQuantumState(quantumState) {
+        console.log('⚛️ Updating quantum state:', quantumState);
+        
+        if (quantumState) {
+            const quantumStateDisplay = document.getElementById('quantum-state-display');
+            const quantumStateLoading = document.getElementById('quantum-state-loading');
+            
+            if (quantumStateDisplay) {
+                quantumStateDisplay.innerHTML = `
+                    <div class="state-vector">
+                        <h3>State Vector</h3>
+                        <div class="state-equation">${quantumState.state_vector}</div>
+                        <div class="state-coefficients">
+                            <div>α = ${quantumState.alpha.toFixed(3)}</div>
+                            <div>β = ${quantumState.beta.toFixed(3)}</div>
+                        </div>
+                        <div class="fidelity">Fidelity: ${(quantumState.fidelity * 100).toFixed(1)}%</div>
+                    </div>
+                `;
+                quantumStateDisplay.style.display = 'block';
+            }
+            
+            if (quantumStateLoading) {
+                quantumStateLoading.style.display = 'none';
+            }
+        }
+    }
+
+    updatePerformanceMetrics(metrics) {
+        console.log('📈 Updating performance metrics:', metrics);
+        
+        if (metrics) {
+            const performanceMetrics = document.getElementById('performance-metrics');
+            const performanceLoading = document.getElementById('performance-loading');
+            
+            if (performanceMetrics) {
+                performanceMetrics.innerHTML = `
+                    <div class="metric-item">
+                        <span class="metric-label">Success Rate</span>
+                        <span class="metric-value">${metrics.success_rate}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Avg Runtime</span>
+                        <span class="metric-value">${metrics.avg_runtime}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Error Rate</span>
+                        <span class="metric-value">${metrics.error_rate}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Backends</span>
+                        <span class="metric-value">${metrics.backend_count}</span>
+                    </div>
+                `;
+                performanceMetrics.style.display = 'block';
+            }
+            
+            if (performanceLoading) {
+                performanceLoading.style.display = 'none';
+            }
+        }
+    }
+
+    updateEntanglementData(entanglementData) {
+        console.log('🔗 Updating entanglement data:', entanglementData);
+        
+        if (entanglementData) {
+            const entanglementContent = document.getElementById('entanglement-content');
+            const entanglementLoading = document.getElementById('entanglement-loading');
+            
+            if (entanglementContent) {
+                entanglementContent.innerHTML = `
+                    <canvas id="entanglement-canvas" width="300" height="120"></canvas>
+                    <div class="entanglement-info">
+                        <span class="entanglement-label">Bell State: ${entanglementData.bell_state}</span>
+                        <span class="entanglement-fidelity">Fidelity: ${(entanglementData.fidelity * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+            }
+            
+            if (entanglementLoading) {
+                entanglementLoading.style.display = 'none';
+            }
+        }
+    }
+
+    updateMeasurementResults(results) {
+        console.log('📊 Updating measurement results:', results);
+        
+        if (results) {
+            const resultsContent = document.getElementById('results-content');
+            const resultsLoading = document.getElementById('results-loading');
+            
+            if (resultsContent) {
+                // Create bar chart for measurement results
+                const canvas = document.createElement('canvas');
+                canvas.id = 'results-canvas';
+                canvas.width = 300;
+                canvas.height = 120;
+                
+                resultsContent.innerHTML = '';
+                resultsContent.appendChild(canvas);
+                
+                // Draw measurement results
+                this.drawMeasurementChart(canvas, results.counts);
+                
+                const resultsInfo = document.createElement('div');
+                resultsInfo.className = 'results-info';
+                resultsInfo.innerHTML = `
+                    <span class="results-label">Measurement Results</span>
+                    <span class="results-shots">Shots: ${results.shots}</span>
+                    <span class="results-fidelity">Fidelity: ${(results.fidelity * 100).toFixed(1)}%</span>
+                `;
+                resultsContent.appendChild(resultsInfo);
+            }
+            
+            if (resultsLoading) {
+                resultsLoading.style.display = 'none';
+            }
+        }
+    }
+
+    drawMeasurementChart(canvas, counts) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw bars for each measurement result
+        const entries = Object.entries(counts);
+        const barWidth = width / entries.length;
+        const maxCount = Math.max(...Object.values(counts));
+        
+        entries.forEach(([state, count], index) => {
+            const barHeight = (count / maxCount) * (height - 40);
+            const x = index * barWidth;
+            const y = height - barHeight - 20;
+            
+            // Draw bar
+            ctx.fillStyle = `hsl(${index * 90}, 70%, 60%)`;
+            ctx.fillRect(x + 5, y, barWidth - 10, barHeight);
+            
+            // Draw label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(state, x + barWidth / 2, height - 5);
+            ctx.fillText(count.toString(), x + barWidth / 2, y - 5);
+        });
+    }
+
+    updateConnectionStatus(status) {
+        const connectionStatus = document.getElementById('connection-status');
+        if (connectionStatus) {
+            connectionStatus.className = `connection-status ${status}`;
+            connectionStatus.innerHTML = `
+                <i class="fas fa-circle status-indicator"></i>
+                <span>${status === 'connected' ? 'Connected to IBM Quantum' : 'Disconnected'}</span>
+            `;
+        }
+    }
+
+    handleDataLoadError(error) {
+        console.error('❌ Data load error:', error);
+        
+        // Show error state for all widgets
+        const loadingScreens = [
+            'backends-loading', 'jobs-loading', 'circuit-loading', 
+            'entanglement-loading', 'results-loading', 'bloch-loading',
+            'quantum-state-loading', 'performance-loading'
+        ];
+        
+        loadingScreens.forEach(screenId => {
+            const screen = document.getElementById(screenId);
+            if (screen) {
+                screen.innerHTML = `
+                    <div class="error-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="error-text">Connection Error</div>
+                        <div class="error-subtext">Unable to load real quantum data</div>
+                        <button class="retry-btn" onclick="dashboard.retryConnection()">
+                            <i class="fas fa-redo"></i> Retry Connection
+                        </button>
+                    </div>
+                `;
+            }
+        });
+        
+        // Update connection status
+        this.updateConnectionStatus('disconnected');
+        
+        // Show notification
+        this.showNotification('Connection Error', 'Unable to connect to IBM Quantum. Please check your API token.', 'error');
+    }
+
+    async retryConnection() {
+        console.log('🔄 Retrying connection...');
+        
+        // Show loading state
+        this.initializeLoadingAnimations();
+        
+        try {
+            // Try to reload all data
+            await this.loadAllData();
+            
+            // Show success notification
+            this.showNotification('Connection Restored', 'Successfully connected to IBM Quantum!', 'success');
+            
+        } catch (error) {
+            console.error('❌ Retry failed:', error);
+            this.showNotification('Retry Failed', 'Still unable to connect. Please check your API token and network connection.', 'error');
+        }
+    }
+
+    showNotification(title, message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-title">${title}</div>
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        // Add to notification container
+        let container = document.getElementById('notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            container.className = 'notification-container';
+            document.body.appendChild(container);
+        }
+        
+        container.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Enhanced error handling for API calls
+    async makeAPICall(url, options = {}) {
+        try {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Authentication required. Please provide your IBM Quantum API token.');
+                } else if (response.status === 503) {
+                    throw new Error('Service unavailable. IBM Quantum service may be down.');
+                } else if (response.status >= 500) {
+                    throw new Error('Server error. Please try again later.');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            }
+            
+            return await response.json();
+            
+        } catch (error) {
+            console.error(`❌ API call failed for ${url}:`, error);
+            throw error;
+        }
+    }
+
+    // Connection health check
+    async checkConnectionHealth() {
+        try {
+            const response = await this.makeAPICall('/api/status');
+            return response.is_connected;
+        } catch (error) {
+            console.error('❌ Connection health check failed:', error);
+            return false;
+        }
+    }
+
+    // Auto-reconnection logic
+    async startAutoReconnection() {
+        this.reconnectionInterval = setInterval(async () => {
+            if (!this.state.isConnected) {
+                console.log('🔄 Attempting auto-reconnection...');
+                try {
+                    const isConnected = await this.checkConnectionHealth();
+                    if (isConnected) {
+                        console.log('✅ Auto-reconnection successful');
+                        await this.loadAllData();
+                        this.showNotification('Reconnected', 'Connection to IBM Quantum restored!', 'success');
+                    }
+                } catch (error) {
+                    console.log('❌ Auto-reconnection failed:', error);
+                }
+            }
+        }, 30000); // Check every 30 seconds
+    }
+
+    stopAutoReconnection() {
+        if (this.reconnectionInterval) {
+            clearInterval(this.reconnectionInterval);
+            this.reconnectionInterval = null;
+        }
+    }
+
+    startRealTimeUpdates() {
+        console.log('🔄 Starting real-time updates...');
+        
+        // Update data every 10 seconds
+        this.updateInterval = setInterval(async () => {
+            try {
+                await this.loadAllData();
+                console.log('✅ Real-time data updated');
+            } catch (error) {
+                console.error('❌ Error in real-time update:', error);
+            }
+        }, 10000);
+        
+        // Update metrics every 5 seconds for more responsive UI
+        this.metricsInterval = setInterval(async () => {
+            try {
+                const response = await fetch('/api/metrics');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.real_data && data.metrics) {
+                        this.updateMetrics({
+                            active_backends: data.metrics.active_backends.value,
+                            total_jobs: data.metrics.total_jobs.value,
+                            running_jobs: data.metrics.running_jobs.value,
+                            queued_jobs: data.metrics.queued_jobs.value
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error updating metrics:', error);
+            }
+        }, 5000);
+    }
+
+    stopRealTimeUpdates() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+        }
+        if (this.metricsInterval) {
+            clearInterval(this.metricsInterval);
+            this.metricsInterval = null;
+        }
+        console.log('⏹️ Real-time updates stopped');
     }
 
     async loadBackends() {
