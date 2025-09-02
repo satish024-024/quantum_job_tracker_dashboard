@@ -3757,7 +3757,7 @@ html, body {
     background: var(--accent-purple);
 }
 
-/* Widgets Grid Layout */
+/* Widgets Grid Layout - 4x2 Grid */
 .widgets-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -3773,6 +3773,47 @@ html, body {
     align-items: stretch;
     justify-items: stretch;
     position: relative;
+}
+
+/* Specific widget positioning in 4x2 grid */
+.widgets-grid .backends-widget {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .jobs-widget {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .circuit-widget {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .entanglement-widget {
+    grid-column: 4 / 5;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .results-widget {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+.widgets-grid .bloch-widget {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+}
+
+.widgets-grid .quantum-state-widget {
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+}
+
+.widgets-grid .performance-widget {
+    grid-column: 4 / 5;
+    grid-row: 2 / 3;
 }
 
 /* Force grid layout with higher specificity */
@@ -3794,28 +3835,271 @@ section.widgets-grid > .widget-container {
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
     background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(15, 52, 96, 0.8));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    /* Ensure proper spacing for headers */
-    padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .widget-container:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
-    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Widget Header Styling */
+.widget-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 12px 0 0;
+}
+
+.widget-header h2 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.widget-header h2 i {
+    color: #4dabf7;
+}
+
+.widget-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.widget-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.widget-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Widget Content Styling */
+.widget-content {
+    flex: 1;
+    padding: 1rem;
+    overflow: auto;
+    color: #ffffff;
 }
 
 /* Remove scrollbars from widgets */
 .widget-content::-webkit-scrollbar,
 .widget-container::-webkit-scrollbar {
     display: none;
+}
+
+/* Backend Cards Styling */
+.backend-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.backend-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.backend-name {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.backend-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.backend-status.active {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.backend-status.maintenance {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.backend-info {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Jobs Table Styling */
+.jobs-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ffffff;
+}
+
+.jobs-table th,
+.jobs-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.jobs-table th {
+    background: rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.jobs-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.done {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.status-badge.running {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+}
+
+.status-badge.queued {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+.real-badge, .sim-badge {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* Loading and Empty States */
+.loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.loading-spinner {
+    margin-bottom: 1rem;
+}
+
+.spinner-ring {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid #4dabf7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.loading-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4dabf7, #339af0);
+    width: 0%;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+.empty-state, .empty-widget {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Real Data Indicators */
+.real-data-badge, .sim-data-badge {
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.real-data-badge {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.sim-data-badge {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.3);
 }
 
 /* Fix canvas and SVG sizing inside widgets */
