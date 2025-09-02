@@ -95,8 +95,22 @@ class QuantumDashboard {
                 this.state.metrics = data.metrics;
                 this.updateMetricsWidgets();
                 return true;
+            } else {
+                console.log('Metrics API response:', data);
+                // Show default values if not connected
+                this.state.metrics = {
+                    active_backends: 0,
+                    total_jobs: 0,
+                    running_jobs: 0,
+                    queued_jobs: 0,
+                    success_rate: 0,
+                    avg_runtime: 0,
+                    error_rate: 0,
+                    total_backends: 0
+                };
+                this.updateMetricsWidgets();
+                return false;
             }
-            return false;
         } catch (error) {
             console.error('Error fetching metrics:', error);
             return false;
@@ -538,11 +552,32 @@ class QuantumDashboard {
         // Set up event listeners
         this.setupEventListeners();
         
+        // Test API connection first
+        await this.testAPIConnection();
+        
         // Initialize all widgets with enhanced loading
         await this.initializeAllWidgets();
         
         // Start real-time updates
         this.startRealTimeUpdates();
+    }
+
+    async testAPIConnection() {
+        try {
+            console.log('Testing API connection...');
+            const response = await fetch('/api/test');
+            const data = await response.json();
+            console.log('API Test Result:', data);
+            
+            if (data.status === 'API working') {
+                console.log('✅ API is working, quantum manager exists:', data.quantum_manager_exists);
+                this.state.isConnected = data.is_connected;
+            } else {
+                console.error('❌ API test failed:', data);
+            }
+        } catch (error) {
+            console.error('❌ API connection test failed:', error);
+        }
     }
 
     setupEventListeners() {

@@ -27,6 +27,16 @@ print("No hardcoded credentials are stored in this configuration")
 IBM_TOKEN = ""
 IBM_CRN = ""
 
+# Global quantum manager instance
+quantum_manager = None
+
+def get_quantum_manager():
+    """Get or create quantum manager instance"""
+    global quantum_manager
+    if quantum_manager is None:
+        quantum_manager = QuantumBackendManager()
+    return quantum_manager
+
 class QuantumBackendManager:
     """Manager for IBM Quantum backends with graceful fallback to simulation"""
     
@@ -1357,11 +1367,10 @@ def set_token():
         # Initialize quantum manager with user's token and CRN
         try:
             print("🔄 Initializing QuantumBackendManager...")
-            if not app.quantum_manager:
-                app.quantum_manager = QuantumBackendManager()
+            qm = get_quantum_manager()
             
             # Connect with the provided credentials
-            app.quantum_manager.connect_with_credentials(token, crn)
+            qm.connect_with_credentials(token, crn)
             print(f"Quantum manager connected for user {session_id}")
             
             # Return immediately - let the frontend handle the connection status
@@ -1395,14 +1404,15 @@ def get_status():
             "message": "No token provided"
         }), 401
     
-    has_manager = hasattr(app, 'quantum_manager') and app.quantum_manager is not None
-    is_connected = has_manager and app.quantum_manager.is_connected
+    qm = get_quantum_manager()
+    has_manager = qm is not None
+    is_connected = has_manager and qm.is_connected
     
     # Get quick backend count if connected
     backend_count = 0
     if is_connected:
         try:
-            backend_count = len(app.quantum_manager.backend_data)
+            backend_count = len(qm.backend_data)
         except:
             pass
     
@@ -1464,7 +1474,8 @@ def get_backends():
         }), 401
     
     # Get real backend data from IBM Quantum - NO FALLBACK
-    if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
+    qm = get_quantum_manager()
+    if not qm.is_connected:
         return jsonify({
             "error": "Not connected to IBM Quantum",
             "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum",
@@ -1475,7 +1486,7 @@ def get_backends():
     
     # Get real backends from quantum manager
     try:
-        backend_data = app.quantum_manager.get_backends()
+        backend_data = qm.get_backends()
         if not backend_data:
             return jsonify({
                 "error": "No backends available",
@@ -1532,7 +1543,8 @@ def get_jobs():
     
     try:
         # Check if we have a valid connection
-        if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
+        qm = get_quantum_manager()
+        if not qm.is_connected:
             return jsonify({
                 "error": "Not connected to IBM Quantum",
                 "message": "Please provide a valid IBM Quantum API token and ensure you are connected to IBM Quantum",
@@ -1542,9 +1554,9 @@ def get_jobs():
             }), 503
         
         # Try to get real jobs from IBM Quantum using the working method
-        if hasattr(app.quantum_manager.provider, 'jobs'):
+        if hasattr(qm.provider, 'jobs'):
             try:
-                real_jobs = app.quantum_manager.provider.jobs(limit=20)
+                real_jobs = qm.provider.jobs(limit=20)
                 if real_jobs:
                     jobs_data = []
                     for job in real_jobs:
@@ -2625,8 +2637,9 @@ if __name__ == '__main__':
         while True:
             try:
                 # Only update if quantum manager exists and is connected
-                if hasattr(app, 'quantum_manager') and app.quantum_manager and app.quantum_manager.is_connected:
-                    app.quantum_manager.update_data()
+                qm = get_quantum_manager()
+                if qm and qm.is_connected:
+                    qm.update_data()
                     print("Successfully updated quantum data")
                 # Don't print "not available" messages - just silently skip
             except Exception as e:
@@ -2645,14 +2658,15 @@ if __name__ == '__main__':
 def api_metrics():
     """API endpoint for dashboard metrics"""
     try:
-        if not quantum_manager.is_connected:
+        qm = get_quantum_manager()
+        if not qm.is_connected:
             return jsonify({
                 "error": "Not connected to IBM Quantum",
                 "connected": False
             }), 503
         
         # Get comprehensive metrics
-        metrics = quantum_manager.get_quantum_metrics()
+        metrics = qm.get_quantum_metrics()
         
         return jsonify({
             "connected": True,
@@ -2671,14 +2685,15 @@ def api_metrics():
 def api_measurement_results():
     """API endpoint for measurement results"""
     try:
-        if not quantum_manager.is_connected:
+        qm = get_quantum_manager()
+        if not qm.is_connected:
             return jsonify({
                 "error": "Not connected to IBM Quantum",
                 "connected": False
             }), 503
         
         # Get measurement results
-        results = quantum_manager.get_measurement_results()
+        results = qm.get_measurement_results()
         
         return jsonify({
             "connected": True,
@@ -2697,15 +2712,16 @@ def api_measurement_results():
 def api_entanglement_data():
     """API endpoint for entanglement analysis"""
     try:
-        if not quantum_manager.is_connected:
+        qm = get_quantum_manager()
+        if not qm.is_connected:
             return jsonify({
                 "error": "Not connected to IBM Quantum",
                 "connected": False
             }), 503
         
         # Calculate entanglement value
-        entanglement_value = quantum_manager.calculate_entanglement()
-        state_data = quantum_manager.get_quantum_state_data()
+        entanglement_value = qm.calculate_entanglement()
+        state_data = qm.get_quantum_state_data()
         
         return jsonify({
             "connected": True,
@@ -2726,14 +2742,15 @@ def api_entanglement_data():
 def api_quantum_state_data():
     """API endpoint for quantum state data"""
     try:
-        if not quantum_manager.is_connected:
+        qm = get_quantum_manager()
+        if not qm.is_connected:
             return jsonify({
                 "error": "Not connected to IBM Quantum",
                 "connected": False
             }), 503
         
         # Get quantum state data
-        state_data = quantum_manager.get_quantum_state_data()
+        state_data = qm.get_quantum_state_data()
         
         return jsonify({
             "connected": True,
@@ -2752,14 +2769,15 @@ def api_quantum_state_data():
 def api_circuit_data():
     """API endpoint for circuit data"""
     try:
-        if not quantum_manager.is_connected:
+        qm = get_quantum_manager()
+        if not qm.is_connected:
             return jsonify({
                 "error": "Not connected to IBM Quantum",
                 "connected": False
             }), 503
         
         # Generate circuit data based on backend information
-        circuit_data = quantum_manager.generate_circuit_data()
+        circuit_data = qm.generate_circuit_data()
         
         return jsonify({
             "connected": True,
@@ -2772,6 +2790,24 @@ def api_circuit_data():
         return jsonify({
             "error": str(e),
             "connected": False
+        }), 500
+
+@app.route('/api/test')
+def api_test():
+    """Test endpoint to verify API is working"""
+    try:
+        qm = get_quantum_manager()
+        return jsonify({
+            "status": "API working",
+            "quantum_manager_exists": qm is not None,
+            "is_connected": qm.is_connected if qm else False,
+            "timestamp": time.time()
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "API error",
+            "error": str(e),
+            "timestamp": time.time()
         }), 500
 
     print("Starting Quantum Jobs Tracker Dashboard with Real Quantum Support...")
