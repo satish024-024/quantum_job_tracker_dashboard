@@ -532,15 +532,25 @@ class QuantumDashboard {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const backends = await response.json();
+            const data = await response.json();
+            console.log('📊 Backends API response:', data);
+            
+            // Handle both array and object responses
+            const backends = Array.isArray(data) ? data : (data.backends || []);
+            
             this.state.backends = backends.map(backend => ({
                 ...backend,
-                real_data: true
+                real_data: data.real_data || false
             }));
 
+            // Update connection status based on API response
+            if (data.connection_status) {
+                this.state.isConnected = data.connection_status === 'connected';
+                this.state.realDataAvailable = data.real_data || false;
+            }
+
             this.updateBackendsDisplay();
-            this.state.isConnected = true;
-            this.state.realDataAvailable = true;
+            this.updateConnectionStatus();
 
             console.log('✅ Backends loaded:', this.state.backends.length);
         } catch (error) {
@@ -548,6 +558,7 @@ class QuantumDashboard {
             this.state.backends = [];
             this.state.isConnected = false;
             this.state.realDataAvailable = false;
+            this.updateBackendsDisplay();
         }
     }
 
@@ -560,10 +571,15 @@ class QuantumDashboard {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const jobs = await response.json();
+            const data = await response.json();
+            console.log('📊 Jobs API response:', data);
+            
+            // Handle both array and object responses
+            const jobs = Array.isArray(data) ? data : (data.jobs || []);
+            
             this.state.jobs = jobs.map(job => ({
                 ...job,
-                real_data: true,
+                real_data: data.real_data || false,
                 progress: this.calculateJobProgress(job)
             }));
 
@@ -671,9 +687,9 @@ class QuantumDashboard {
     }
 
     updateBackendsDisplay() {
-        const container = document.getElementById('backends-container');
+        const container = document.getElementById('backends-content');
         if (!container) {
-            console.error('❌ backends-container not found');
+            console.error('❌ backends-content not found');
             return;
         }
         console.log('🔎 updateBackendsDisplay data:', this.state.backends);
@@ -690,13 +706,16 @@ class QuantumDashboard {
                     '<div class="sim-data-badge">🔄 Simulator</div>'
                 }
             </div>
-        `).join('') : '<div class="empty-widget">No backends available.</div>';
+        `).join('') : '<div class="empty-widget">No IBM Quantum backends available. Please connect to IBM Quantum to see real backends.</div>';
 
-    // Show the container and hide loading spinner
-    const loading = document.getElementById('backends-loading');
-    const content = document.getElementById('backends-content');
-    if (loading) loading.style.display = 'none';
-    if (content) content.style.display = 'block';
+        // Show the container and hide loading spinner
+        const loading = document.getElementById('backends-loading');
+        if (loading) {
+            loading.style.display = 'none';
+        }
+        if (container) {
+            container.style.display = 'block';
+        }
         this.updateMetrics();
     }
 
@@ -726,7 +745,7 @@ class QuantumDashboard {
             content.style.display = 'block';
         }
         if (!this.state.jobs || this.state.jobs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No jobs found.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No IBM Quantum jobs found. Please connect to IBM Quantum to see real jobs.</td></tr>`;
             // Always show content if no jobs
             if (content) content.style.display = 'block';
             return;
@@ -751,6 +770,24 @@ class QuantumDashboard {
                 </td>
             </tr>
         `).join('');
+    }
+
+    updateConnectionStatus() {
+        const statusElement = document.getElementById('connection-status');
+        if (statusElement) {
+            const indicator = statusElement.querySelector('.status-indicator');
+            const textSpan = statusElement.querySelector('span');
+            
+            if (this.state.isConnected && this.state.realDataAvailable) {
+                if (textSpan) textSpan.textContent = 'Connected to IBM Quantum';
+                if (indicator) indicator.className = 'fas fa-circle status-indicator connected';
+                statusElement.className = 'connection-status connected';
+            } else {
+                if (textSpan) textSpan.textContent = 'Disconnected from IBM Quantum';
+                if (indicator) indicator.className = 'fas fa-circle status-indicator disconnected';
+                statusElement.className = 'connection-status disconnected';
+            }
+        }
     }
 
     updateCircuitDisplay() {

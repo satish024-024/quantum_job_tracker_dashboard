@@ -51,18 +51,29 @@ async function fetchData() {
     try {
         // Fetch backends data
         const backendsResponse = await fetch('/api/backends');
-        state.backends = await backendsResponse.json();
+        const backendsData = await backendsResponse.json();
         
         // Fetch jobs data
         const jobsResponse = await fetch('/api/jobs');
-        state.jobs = await jobsResponse.json();
+        const jobsData = await jobsResponse.json();
         
         // Fetch dashboard quantum state
         const dashboardResponse = await fetch('/api/dashboard_state');
-        state.dashboardState = await dashboardResponse.json();
+        const dashboardData = await dashboardResponse.json();
         
-        // Update timestamp
+        // Update state with fetched data
+        state.backends = backendsData.backends || backendsData;
+        state.jobs = jobsData.jobs || jobsData;
+        state.dashboardState = dashboardData;
         state.lastUpdate = new Date();
+        
+        // Check for connection status
+        const connectionStatus = backendsData.connection_status || 
+                                jobsData.connection_status || 
+                                dashboardData.connection_status;
+        
+        // Update connection status indicator
+        updateConnectionStatus(connectionStatus);
         
         // Update the UI with fetched data
         updateBackendsUI(state.backends);
@@ -71,11 +82,47 @@ async function fetchData() {
         
         // Update quantum circuit visualization
         const canvas = document.getElementById('superposition-canvas');
-        const ctx = canvas.getContext('2d');
-        drawQuantumCircuit(ctx, state.backends, state.jobs);
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            drawQuantumCircuit(ctx, state.backends, state.jobs);
+        }
         
     } catch (error) {
         console.error('Error fetching data:', error);
+        updateConnectionStatus('error');
+    }
+}
+
+// Update connection status indicator
+function updateConnectionStatus(status) {
+    const statusElement = document.getElementById('connection-status');
+    if (!statusElement) return;
+    
+    const indicator = statusElement.querySelector('.status-indicator');
+    const textSpan = statusElement.querySelector('span');
+    
+    if (!indicator || !textSpan) return;
+    
+    switch (status) {
+        case 'connected':
+            textSpan.textContent = 'Connected to IBM Quantum';
+            indicator.className = 'fas fa-circle status-indicator connected';
+            statusElement.className = 'connection-status connected';
+            break;
+        case 'disconnected':
+            textSpan.textContent = 'Disconnected from IBM Quantum';
+            indicator.className = 'fas fa-circle status-indicator disconnected';
+            statusElement.className = 'connection-status disconnected';
+            break;
+        case 'error':
+            textSpan.textContent = 'Connection Error';
+            indicator.className = 'fas fa-exclamation-triangle status-indicator error';
+            statusElement.className = 'connection-status error';
+            break;
+        default:
+            textSpan.textContent = 'Connection Status Unknown';
+            indicator.className = 'fas fa-question-circle status-indicator unknown';
+            statusElement.className = 'connection-status unknown';
     }
 }
 
