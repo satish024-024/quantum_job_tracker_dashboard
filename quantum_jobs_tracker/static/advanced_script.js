@@ -322,50 +322,71 @@ class QuantumDashboard {
     }
 
     async loadAllData() {
-        console.log('📡 Loading all real-time data...');
+        console.log('📡 Loading all real-time IBM Quantum data...');
 
         try {
-            // Show widget containers immediately for better UX
-            this.showAllWidgetContainers();
-
             // Check connection status first
-            await this.checkConnectionStatus();
+            const connectionStatus = await this.checkConnectionStatus();
+            
+            if (!connectionStatus.is_connected) {
+                console.warn('⚠️ Not connected to IBM Quantum, showing connection prompt');
+                this.showConnectionPrompt();
+                return;
+            }
 
-            // Load critical data first (backends and jobs)
+            // Start loading animations for all widgets
+            this.startAllLoadingAnimations();
+
+            // Load critical data first (backends and jobs) with individual progress tracking
             await Promise.all([
-                this.loadBackends(),
-                this.loadJobs()
+                this.loadBackendsWithProgress(),
+                this.loadJobsWithProgress()
             ]);
 
             console.log('✅ Critical data loaded, loading remaining data...');
 
-            // Load remaining data in background
-            Promise.all([
-                this.loadQuantumState(),
-                this.loadCircuitData(),
-                this.loadResults(),
-                this.loadPerformance()
-            ]).then(() => {
-                console.log('✅ All background data loaded');
-                // Update displays after background data loads
-                this.updateResultsDisplay();
-                this.updateBlochDisplay();
-                this.updateQuantumStateDisplay();
-                this.updatePerformanceDisplay();
-            }).catch(error => {
-                console.warn('⚠️ Some background data failed to load:', error);
+            // Load remaining data in background with progress tracking
+            const backgroundPromises = [
+                this.loadQuantumStateWithProgress(),
+                this.loadCircuitDataWithProgress(),
+                this.loadResultsWithProgress(),
+                this.loadPerformanceWithProgress(),
+                this.loadEntanglementWithProgress()
+            ];
+
+            // Track progress of background loading
+            let completedBackground = 0;
+            const totalBackground = backgroundPromises.length;
+
+            backgroundPromises.forEach((promise, index) => {
+                promise.then(() => {
+                    completedBackground++;
+                    console.log(`✅ Background data ${index + 1}/${totalBackground} loaded`);
+                    
+                    // Update displays as each completes
+                    this.updateWidgetDisplay(index);
+                }).catch(error => {
+                    console.warn(`⚠️ Background data ${index + 1} failed to load:`, error);
+                    completedBackground++;
+                });
             });
+
+            // Wait for all background data to complete
+            await Promise.allSettled(backgroundPromises);
+            
+            console.log('✅ All data loading complete');
+            this.hideAllLoadingAnimations();
 
         } catch (error) {
             console.error('❌ Error loading critical data:', error);
-            // Still show containers even if data loading fails
-            this.showAllWidgetContainers();
+            this.hideAllLoadingAnimations();
+            this.showErrorState(error);
         }
     }
 
     async checkConnectionStatus() {
         try {
-            console.log('🔍 Checking connection status...');
+            console.log('🔍 Checking IBM Quantum connection status...');
             const response = await fetch('/api/status');
             
             if (response.ok) {
@@ -374,19 +395,681 @@ class QuantumDashboard {
                 
                 if (status.is_connected) {
                     console.log('✅ Connected to IBM Quantum with', status.backend_count, 'backends');
+                    this.updateConnectionStatus(true, status);
                 } else {
                     console.log('⏳ Still connecting to IBM Quantum...');
+                    this.updateConnectionStatus(false, status);
                 }
                 
                 return status;
             } else {
                 console.warn('⚠️ Failed to check connection status');
+                this.updateConnectionStatus(false, { error: 'Failed to check status' });
                 return { is_connected: false };
             }
         } catch (error) {
             console.error('❌ Error checking connection status:', error);
+            this.updateConnectionStatus(false, { error: error.message });
             return { is_connected: false };
         }
+    }
+
+    updateConnectionStatus(isConnected, status) {
+        const connectionStatus = document.getElementById('connection-status');
+        if (connectionStatus) {
+            if (isConnected) {
+                connectionStatus.innerHTML = `
+                    <i class="fas fa-circle status-indicator connected"></i>
+                    <span>Connected to IBM Quantum</span>
+                `;
+                connectionStatus.className = 'connection-status connected';
+            } else {
+                connectionStatus.innerHTML = `
+                    <i class="fas fa-circle status-indicator disconnected"></i>
+                    <span>Connecting to IBM Quantum...</span>
+                `;
+                connectionStatus.className = 'connection-status disconnected';
+            }
+        }
+    }
+
+    startAllLoadingAnimations() {
+        console.log('🎬 Starting loading animations for all widgets...');
+        
+        const loadingElements = [
+            'backends-loading',
+            'jobs-loading',
+            'circuit-loading',
+            'entanglement-loading',
+            'results-loading',
+            'bloch-loading',
+            'quantum-state-loading',
+            'performance-loading'
+        ];
+
+        loadingElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'flex';
+                element.classList.remove('hide');
+            }
+        });
+    }
+
+    hideAllLoadingAnimations() {
+        console.log('🎬 Hiding loading animations for all widgets...');
+        
+        const loadingElements = [
+            'backends-loading',
+            'jobs-loading',
+            'circuit-loading',
+            'entanglement-loading',
+            'results-loading',
+            'bloch-loading',
+            'quantum-state-loading',
+            'performance-loading'
+        ];
+
+        loadingElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.add('hide');
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 500);
+            }
+        });
+    }
+
+    async loadBackendsWithProgress() {
+        try {
+            console.log('🔄 Loading IBM Quantum backends...');
+            const response = await fetch('/api/backends');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const backends = await response.json();
+            this.state.backends = backends;
+            
+            // Update metrics
+            this.updateMetrics();
+            
+            // Show backends content
+            this.showBackendsContent();
+            
+            console.log('✅ Backends loaded:', backends.length);
+        } catch (error) {
+            console.error('❌ Error loading backends:', error);
+            this.state.backends = [];
+            this.showBackendsError(error);
+        }
+    }
+
+    async loadJobsWithProgress() {
+        try {
+            console.log('🔄 Loading IBM Quantum jobs...');
+            const response = await fetch('/api/jobs');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const jobs = await response.json();
+            this.state.jobs = jobs;
+            
+            // Update metrics
+            this.updateMetrics();
+            
+            // Show jobs content
+            this.showJobsContent();
+            
+            console.log('✅ Jobs loaded:', jobs.length);
+        } catch (error) {
+            console.error('❌ Error loading jobs:', error);
+            this.state.jobs = [];
+            this.showJobsError(error);
+        }
+    }
+
+    async loadQuantumStateWithProgress() {
+        try {
+            console.log('🔄 Loading quantum state data...');
+            const response = await fetch('/api/quantum_state');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const quantumState = await response.json();
+            this.state.quantumState = quantumState;
+            
+            console.log('✅ Quantum state loaded');
+        } catch (error) {
+            console.error('❌ Error loading quantum state:', error);
+            this.state.quantumState = null;
+        }
+    }
+
+    async loadCircuitDataWithProgress() {
+        try {
+            console.log('🔄 Loading circuit data...');
+            const response = await fetch('/api/circuit_data');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const circuitData = await response.json();
+            this.state.circuitData = circuitData;
+            
+            console.log('✅ Circuit data loaded');
+        } catch (error) {
+            console.error('❌ Error loading circuit data:', error);
+            this.state.circuitData = null;
+        }
+    }
+
+    async loadResultsWithProgress() {
+        try {
+            console.log('🔄 Loading measurement results...');
+            const response = await fetch('/api/results');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const results = await response.json();
+            this.state.results = results;
+            
+            console.log('✅ Results loaded');
+        } catch (error) {
+            console.error('❌ Error loading results:', error);
+            this.state.results = [];
+        }
+    }
+
+    async loadPerformanceWithProgress() {
+        try {
+            console.log('🔄 Loading performance metrics...');
+            const response = await fetch('/api/performance');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const performance = await response.json();
+            this.state.performance = performance;
+            
+            console.log('✅ Performance data loaded');
+        } catch (error) {
+            console.error('❌ Error loading performance data:', error);
+            this.state.performance = null;
+        }
+    }
+
+    async loadEntanglementWithProgress() {
+        try {
+            console.log('🔄 Loading entanglement data...');
+            // This would be a custom endpoint for entanglement calculations
+            const response = await fetch('/api/quantum_visualization_data');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const entanglementData = await response.json();
+            this.state.entanglementData = entanglementData;
+            
+            console.log('✅ Entanglement data loaded');
+        } catch (error) {
+            console.error('❌ Error loading entanglement data:', error);
+            this.state.entanglementData = null;
+        }
+    }
+
+    updateWidgetDisplay(widgetIndex) {
+        const widgetUpdates = [
+            () => this.updateResultsDisplay(),
+            () => this.updateBlochDisplay(),
+            () => this.updateQuantumStateDisplay(),
+            () => this.updatePerformanceDisplay(),
+            () => this.updateEntanglementDisplay()
+        ];
+
+        if (widgetUpdates[widgetIndex]) {
+            widgetUpdates[widgetIndex]();
+        }
+    }
+
+    showBackendsContent() {
+        const loading = document.getElementById('backends-loading');
+        const content = document.getElementById('backends-content');
+        
+        if (loading) {
+            loading.classList.add('hide');
+            setTimeout(() => loading.style.display = 'none', 500);
+        }
+        
+        if (content) {
+            content.style.display = 'block';
+            this.renderBackends();
+        }
+    }
+
+    showJobsContent() {
+        const loading = document.getElementById('jobs-loading');
+        const content = document.getElementById('jobs-content');
+        
+        if (loading) {
+            loading.classList.add('hide');
+            setTimeout(() => loading.style.display = 'none', 500);
+        }
+        
+        if (content) {
+            content.style.display = 'block';
+            this.renderJobs();
+        }
+    }
+
+    showBackendsError(error) {
+        const content = document.getElementById('backends-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Failed to load backends</h3>
+                    <p>${error.message}</p>
+                    <button onclick="dashboard.loadBackendsWithProgress()" class="retry-btn">
+                        <i class="fas fa-redo"></i> Retry
+                    </button>
+                </div>
+            `;
+            content.style.display = 'block';
+        }
+    }
+
+    showJobsError(error) {
+        const content = document.getElementById('jobs-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="error-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Failed to load jobs</h3>
+                    <p>${error.message}</p>
+                    <button onclick="dashboard.loadJobsWithProgress()" class="retry-btn">
+                        <i class="fas fa-redo"></i> Retry
+                    </button>
+                </div>
+            `;
+            content.style.display = 'block';
+        }
+    }
+
+    showConnectionPrompt() {
+        const apiInputContainer = document.getElementById('api-input-container');
+        if (apiInputContainer) {
+            apiInputContainer.style.display = 'block';
+        }
+    }
+
+    showErrorState(error) {
+        console.error('🚨 Dashboard error state:', error);
+        // Show error notification
+        this.showNotification('Error loading data: ' + error.message, 'error');
+    }
+
+    startRealTimeUpdates() {
+        console.log('🔄 Starting real-time updates...');
+        
+        // Update data every 30 seconds
+        this.updateInterval = setInterval(async () => {
+            try {
+                this.showDataRefreshIndicator();
+                await this.loadAllData();
+                this.hideDataRefreshIndicator();
+            } catch (error) {
+                console.warn('⚠️ Real-time update failed:', error);
+                this.hideDataRefreshIndicator();
+            }
+        }, 30000);
+
+        // Update metrics every 10 seconds
+        this.metricsInterval = setInterval(() => {
+            this.updateMetrics();
+        }, 10000);
+
+        // Update real-time indicator every 5 seconds
+        this.realTimeInterval = setInterval(() => {
+            this.updateRealTimeIndicator();
+        }, 5000);
+    }
+
+    stopRealTimeUpdates() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+        }
+        if (this.metricsInterval) {
+            clearInterval(this.metricsInterval);
+        }
+        if (this.realTimeInterval) {
+            clearInterval(this.realTimeInterval);
+        }
+    }
+
+    showDataRefreshIndicator() {
+        let indicator = document.getElementById('data-refresh-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'data-refresh-indicator';
+            indicator.className = 'data-refresh-indicator';
+            indicator.innerHTML = '<i class="fas fa-sync-alt"></i>Updating data...';
+            document.body.appendChild(indicator);
+        }
+        indicator.classList.add('show');
+    }
+
+    hideDataRefreshIndicator() {
+        const indicator = document.getElementById('data-refresh-indicator');
+        if (indicator) {
+            indicator.classList.remove('show');
+        }
+    }
+
+    updateRealTimeIndicator() {
+        const indicator = document.getElementById('real-time-indicator');
+        if (indicator) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const timeElement = indicator.querySelector('.time-display');
+            
+            if (!timeElement) {
+                const timeDisplay = document.createElement('span');
+                timeDisplay.className = 'time-display';
+                timeDisplay.style.fontSize = '0.8rem';
+                timeDisplay.style.opacity = '0.8';
+                indicator.appendChild(timeDisplay);
+            }
+            
+            const timeDisplay = indicator.querySelector('.time-display');
+            if (timeDisplay) {
+                timeDisplay.textContent = `Last update: ${timeString}`;
+            }
+        }
+    }
+
+    renderBackends() {
+        const backendsList = document.getElementById('backends-content');
+        if (!backendsList || !this.state.backends) return;
+
+        if (this.state.backends.length === 0) {
+            backendsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-server"></i>
+                    <h3>No backends available</h3>
+                    <p>No IBM Quantum backends are currently accessible</p>
+                </div>
+            `;
+            return;
+        }
+
+        backendsList.innerHTML = this.state.backends.map(backend => `
+            <div class="backend-item">
+                <div class="backend-info">
+                    <h4>${backend.name}</h4>
+                    <div class="backend-details">
+                        <span class="qubits">${backend.num_qubits} qubits</span>
+                        <span class="status ${backend.operational ? 'operational' : 'inactive'}">
+                            ${backend.operational ? 'Operational' : 'Inactive'}
+                        </span>
+                    </div>
+                </div>
+                <div class="backend-actions">
+                    <button class="action-btn" onclick="dashboard.selectBackend('${backend.name}')">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderJobs() {
+        const jobsBody = document.getElementById('jobs-body');
+        if (!jobsBody || !this.state.jobs) return;
+
+        if (this.state.jobs.length === 0) {
+            jobsBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-tasks"></i>
+                        <span>No jobs found</span>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        jobsBody.innerHTML = this.state.jobs.map(job => `
+            <tr>
+                <td class="job-id">${job.job_id ? job.job_id.substring(0, 8) + '...' : 'N/A'}</td>
+                <td class="backend">${job.backend || 'Unknown'}</td>
+                <td class="status">
+                    <span class="status-badge ${job.status ? job.status.toLowerCase() : 'unknown'}">
+                        ${job.status || 'Unknown'}
+                    </span>
+                </td>
+                <td class="qubits">${job.num_qubits || 0}</td>
+                <td class="progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${job.progress || 0}%"></div>
+                    </div>
+                    <span class="progress-text">${job.progress || 0}%</span>
+                </td>
+                <td class="actions">
+                    <button class="action-btn" onclick="dashboard.viewJobDetails('${job.job_id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    updateMetrics() {
+        if (!this.state.backends || !this.state.jobs) return;
+
+        const activeBackends = this.state.backends.filter(b => b.operational).length;
+        const totalJobs = this.state.jobs.length;
+        const runningJobs = this.state.jobs.filter(j => j.status === 'RUNNING').length;
+        const queuedJobs = this.state.jobs.filter(j => j.status === 'QUEUED').length;
+
+        // Update metric values
+        this.updateMetricValue('active-backends-value', activeBackends);
+        this.updateMetricValue('total-jobs-value', totalJobs);
+        this.updateMetricValue('running-jobs-value', runningJobs);
+        this.updateMetricValue('queued-jobs-value', queuedJobs);
+    }
+
+    updateMetricValue(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = value;
+            element.style.animation = 'pulse 0.5s ease-in-out';
+            setTimeout(() => {
+                element.style.animation = '';
+            }, 500);
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(notification => notification.remove());
+
+        // Create new notification
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-${this.getNotificationIcon(type)}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 5000);
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            info: 'info-circle',
+            success: 'check-circle',
+            warning: 'exclamation-triangle',
+            error: 'times-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+
+    selectBackend(backendName) {
+        console.log('Selected backend:', backendName);
+        this.showNotification(`Selected backend: ${backendName}`, 'success');
+        // Add backend selection logic here
+    }
+
+    viewJobDetails(jobId) {
+        console.log('Viewing job details:', jobId);
+        this.showNotification(`Viewing job: ${jobId}`, 'info');
+        // Add job details modal logic here
+    }
+
+    filterJobs(searchTerm) {
+        if (!this.state.jobs) return;
+        
+        const filteredJobs = this.state.jobs.filter(job => 
+            job.job_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            job.backend?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            job.status?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        this.renderFilteredJobs(filteredJobs);
+    }
+
+    renderFilteredJobs(jobs) {
+        const jobsBody = document.getElementById('jobs-body');
+        if (!jobsBody) return;
+
+        if (jobs.length === 0) {
+            jobsBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        <i class="fas fa-search"></i>
+                        <span>No jobs match your search</span>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        jobsBody.innerHTML = jobs.map(job => `
+            <tr>
+                <td class="job-id">${job.job_id ? job.job_id.substring(0, 8) + '...' : 'N/A'}</td>
+                <td class="backend">${job.backend || 'Unknown'}</td>
+                <td class="status">
+                    <span class="status-badge ${job.status ? job.status.toLowerCase() : 'unknown'}">
+                        ${job.status || 'Unknown'}
+                    </span>
+                </td>
+                <td class="qubits">${job.num_qubits || 0}</td>
+                <td class="progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${job.progress || 0}%"></div>
+                    </div>
+                    <span class="progress-text">${job.progress || 0}%</span>
+                </td>
+                <td class="actions">
+                    <button class="action-btn" onclick="dashboard.viewJobDetails('${job.job_id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    updateEntanglementDisplay() {
+        const loading = document.getElementById('entanglement-loading');
+        const content = document.getElementById('entanglement-content');
+        
+        if (loading) {
+            loading.classList.add('hide');
+            setTimeout(() => loading.style.display = 'none', 500);
+        }
+        
+        if (content) {
+            content.style.display = 'block';
+            this.renderEntanglement();
+        }
+    }
+
+    renderEntanglement() {
+        const entanglementCanvas = document.getElementById('entanglement-canvas');
+        const fidelityElement = document.getElementById('entanglement-fidelity');
+        
+        if (entanglementCanvas) {
+            const ctx = entanglementCanvas.getContext('2d');
+            this.drawEntanglementVisualization(ctx);
+        }
+        
+        if (fidelityElement && this.state.entanglementData) {
+            fidelityElement.textContent = this.state.entanglementData.fidelity || '0.95';
+        }
+    }
+
+    drawEntanglementVisualization(ctx) {
+        const canvas = ctx.canvas;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw entanglement visualization
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        
+        // Draw quantum entanglement pattern
+        for (let i = 0; i < 100; i++) {
+            const angle = (i / 100) * Math.PI * 2;
+            const radius = 30 + Math.sin(angle * 3) * 10;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        
+        ctx.stroke();
+        
+        // Draw quantum particles
+        ctx.fillStyle = '#9b59b6';
+        ctx.beginPath();
+        ctx.arc(centerX - 20, centerY, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#00ff88';
+        ctx.beginPath();
+        ctx.arc(centerX + 20, centerY, 3, 0, Math.PI * 2);
+        ctx.fill();
     }
 
     // Load real results data
