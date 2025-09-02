@@ -1,84 +1,5 @@
-// Advanced Quantum Dashboard
+// Advanced Quantum Dashboard with Real-time Data Updates
 class QuantumDashboard {
-    // Show/hide logic for Results widget
-    updateResultsDisplay() {
-        const parent = document.querySelector('.results-widget .widget-content');
-        if (parent) {
-            parent.style.opacity = '1';
-            parent.style.display = 'block';
-        }
-        const loading = document.getElementById('results-loading');
-        const content = document.getElementById('results-content');
-        if (loading) {
-            loading.classList.add('hide');
-            setTimeout(() => {
-                loading.style.display = 'none';
-            }, 500);
-        }
-        if (content) {
-            content.style.display = 'block';
-        }
-    }
-
-    // Show/hide logic for Bloch Sphere widget
-    updateBlochDisplay() {
-        const parent = document.querySelector('.bloch-widget .widget-content');
-        if (parent) {
-            parent.style.opacity = '1';
-            parent.style.display = 'block';
-        }
-        const loading = document.getElementById('bloch-loading');
-        const content = document.getElementById('bloch-container');
-        if (loading) {
-            loading.classList.add('hide');
-            setTimeout(() => {
-                loading.style.display = 'none';
-            }, 500);
-        }
-        if (content) {
-            content.style.display = 'block';
-        }
-    }
-
-    // Show/hide logic for Quantum State widget
-    updateQuantumStateDisplay() {
-        const parent = document.querySelector('.quantum-state-widget .widget-content');
-        if (parent) {
-            parent.style.opacity = '1';
-            parent.style.display = 'block';
-        }
-        const loading = document.getElementById('quantum-state-loading');
-        const content = document.getElementById('quantum-state-display');
-        if (loading) {
-            loading.classList.add('hide');
-            setTimeout(() => {
-                loading.style.display = 'none';
-            }, 500);
-        }
-        if (content) {
-            content.style.display = 'block';
-        }
-    }
-
-    // Show/hide logic for Performance widget
-    updatePerformanceDisplay() {
-        const parent = document.querySelector('.performance-widget .widget-content');
-        if (parent) {
-            parent.style.opacity = '1';
-            parent.style.display = 'block';
-        }
-        const loading = document.getElementById('performance-loading');
-        const content = document.getElementById('performance-metrics');
-        if (loading) {
-            loading.classList.add('hide');
-            setTimeout(() => {
-                loading.style.display = 'none';
-            }, 500);
-        }
-        if (content) {
-            content.style.display = 'block';
-        }
-    }
     constructor() {
         this.state = {
             backends: [],
@@ -86,7 +7,10 @@ class QuantumDashboard {
             quantumState: null,
             circuitData: null,
             isConnected: false,
-            realDataAvailable: false
+            realDataAvailable: false,
+            metrics: {},
+            measurementResults: {},
+            entanglementData: {}
         };
 
         this.blochCanvas = null;
@@ -95,21 +19,830 @@ class QuantumDashboard {
         this.circuitCtx = null;
         this.animationId = null;
         this.circuitAnimationId = null;
+        this.updateInterval = null;
 
         this.blochState = {
             theta: Math.PI / 4,
-            phi: Math.PI / 6,
-            autoRotate: true,
-            rotation: 0,
-            isExpanded: false,
-            history: [],
-            currentState: { theta: Math.PI / 4, phi: Math.PI / 6 }
+            phi: 0,
+            alpha: 0.707,
+            beta: 0.707
         };
 
         this.init();
+    }
 
-        // Initialize settings modal
-        this.initSettingsModal();
+    // Enhanced loading animation system
+    showLoadingAnimation(widgetId, message = "Loading...") {
+        const loadingElement = document.getElementById(`${widgetId}-loading`);
+        const contentElement = document.getElementById(`${widgetId}-content`) || 
+                              document.getElementById(`${widgetId}-container`) ||
+                              document.getElementById(`${widgetId}-display`) ||
+                              document.getElementById(`${widgetId}-metrics`);
+        
+        if (loadingElement) {
+            loadingElement.style.display = 'flex';
+            loadingElement.querySelector('.loading-text').textContent = message;
+            
+            // Animate progress bar
+            const progressBar = loadingElement.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = '0%';
+                progressBar.style.transition = 'width 2s ease-in-out';
+                setTimeout(() => {
+                    progressBar.style.width = '100%';
+                }, 100);
+            }
+        }
+        
+        if (contentElement) {
+            contentElement.style.display = 'none';
+        }
+    }
+
+    hideLoadingAnimation(widgetId) {
+        const loadingElement = document.getElementById(`${widgetId}-loading`);
+        const contentElement = document.getElementById(`${widgetId}-content`) || 
+                              document.getElementById(`${widgetId}-container`) ||
+                              document.getElementById(`${widgetId}-display`) ||
+                              document.getElementById(`${widgetId}-metrics`);
+        
+        if (loadingElement) {
+            loadingElement.style.opacity = '0';
+            loadingElement.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(() => {
+                loadingElement.style.display = 'none';
+                loadingElement.style.opacity = '1';
+            }, 500);
+        }
+        
+        if (contentElement) {
+            contentElement.style.display = 'block';
+            contentElement.style.opacity = '0';
+            contentElement.style.transition = 'opacity 0.5s ease-in';
+            setTimeout(() => {
+                contentElement.style.opacity = '1';
+            }, 100);
+        }
+    }
+
+    // Real-time data fetching methods
+    async fetchMetrics() {
+        try {
+            const response = await fetch('/api/metrics');
+            const data = await response.json();
+            
+            if (data.connected && data.metrics) {
+                this.state.metrics = data.metrics;
+                this.updateMetricsWidgets();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching metrics:', error);
+            return false;
+        }
+    }
+
+    async fetchMeasurementResults() {
+        try {
+            const response = await fetch('/api/measurement_results');
+            const data = await response.json();
+            
+            if (data.connected && data.results) {
+                this.state.measurementResults = data.results;
+                this.updateResultsWidget();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching measurement results:', error);
+            return false;
+        }
+    }
+
+    async fetchEntanglementData() {
+        try {
+            const response = await fetch('/api/entanglement_data');
+            const data = await response.json();
+            
+            if (data.connected && data.entanglement_value !== undefined) {
+                this.state.entanglementData = data;
+                this.updateEntanglementWidget();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching entanglement data:', error);
+            return false;
+        }
+    }
+
+    async fetchQuantumStateData() {
+        try {
+            const response = await fetch('/api/quantum_state_data');
+            const data = await response.json();
+            
+            if (data.connected && data.state_data) {
+                this.state.quantumState = data.state_data;
+                this.updateQuantumStateWidget();
+                this.updateBlochSphereWidget();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching quantum state data:', error);
+            return false;
+        }
+    }
+
+    // Update methods for each widget
+    updateMetricsWidgets() {
+        const metrics = this.state.metrics;
+        
+        // Update top row metric cards
+        this.updateMetricCard('active-backends', metrics.active_backends || 0, 'Active');
+        this.updateMetricCard('total-jobs', metrics.total_jobs || 0, 'Total');
+        this.updateMetricCard('running-jobs', metrics.running_jobs || 0, 'Running');
+        this.updateMetricCard('queued-jobs', metrics.queued_jobs || 0, 'Queued');
+        
+        // Update performance widget
+        this.updatePerformanceWidget(metrics);
+    }
+
+    updateMetricCard(metricId, value, label) {
+        const valueElement = document.getElementById(`${metricId}-value`);
+        const trendElement = document.querySelector(`[data-metric="${metricId}"] .metric-trend span`);
+        
+        if (valueElement) {
+            valueElement.textContent = value;
+            valueElement.style.animation = 'pulse 0.5s ease-in-out';
+        }
+        
+        if (trendElement) {
+            trendElement.textContent = `${label} backends`;
+        }
+    }
+
+    updateResultsWidget() {
+        const results = this.state.measurementResults;
+        if (!results.results) return;
+
+        // Update results chart
+        this.drawResultsChart(results.results);
+        
+        // Update results info
+        const shotsElement = document.getElementById('results-shots');
+        const fidelityElement = document.getElementById('results-fidelity');
+        
+        if (shotsElement) shotsElement.textContent = results.shots || 100;
+        if (fidelityElement) fidelityElement.textContent = `${(results.fidelity * 100).toFixed(1)}%`;
+        
+        this.hideLoadingAnimation('results');
+    }
+
+    updateEntanglementWidget() {
+        const data = this.state.entanglementData;
+        if (!data.entanglement_value) return;
+
+        // Update entanglement visualization
+        this.drawEntanglementVisualization(data.entanglement_value);
+        
+        // Update entanglement info
+        const fidelityElement = document.getElementById('entanglement-fidelity');
+        if (fidelityElement) {
+            fidelityElement.textContent = `${(data.fidelity * 100).toFixed(1)}%`;
+        }
+        
+        this.hideLoadingAnimation('entanglement');
+    }
+
+    updateQuantumStateWidget() {
+        const stateData = this.state.quantumState;
+        if (!stateData) return;
+
+        // Update state vector display
+        const equationElement = document.querySelector('.quantum-state-display .state-equation');
+        const alphaElement = document.querySelector('.quantum-state-display .state-coefficients div:first-child');
+        const betaElement = document.querySelector('.quantum-state-display .state-coefficients div:last-child');
+        
+        if (equationElement) {
+            equationElement.textContent = `|ψ⟩ = ${stateData.alpha.toFixed(3)}|0⟩ + ${stateData.beta.toFixed(3)}|1⟩`;
+        }
+        
+        if (alphaElement) {
+            alphaElement.textContent = `α = ${stateData.alpha.toFixed(3)}`;
+        }
+        
+        if (betaElement) {
+            betaElement.textContent = `β = ${stateData.beta.toFixed(3)}`;
+        }
+        
+        this.hideLoadingAnimation('quantum-state');
+    }
+
+    updateBlochSphereWidget() {
+        const stateData = this.state.quantumState;
+        if (!stateData) return;
+
+        // Update Bloch sphere visualization
+        this.updateBlochSphereVisualization(stateData);
+        
+        this.hideLoadingAnimation('bloch');
+    }
+
+    updatePerformanceWidget(metrics) {
+        const performanceMetrics = document.getElementById('performance-metrics');
+        if (!performanceMetrics) return;
+
+        const metricItems = performanceMetrics.querySelectorAll('.metric-item');
+        
+        if (metricItems[0]) {
+            metricItems[0].querySelector('.metric-value').textContent = `${metrics.success_rate || 0}%`;
+        }
+        if (metricItems[1]) {
+            metricItems[1].querySelector('.metric-value').textContent = `${Math.round(metrics.avg_runtime / 60)}m`;
+        }
+        if (metricItems[2]) {
+            metricItems[2].querySelector('.metric-value').textContent = `${metrics.error_rate || 0}%`;
+        }
+        if (metricItems[3]) {
+            metricItems[3].querySelector('.metric-value').textContent = metrics.total_backends || 0;
+        }
+        
+        this.hideLoadingAnimation('performance');
+    }
+
+    // Visualization methods
+    drawResultsChart(results) {
+        const canvas = document.getElementById('results-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw bar chart
+        const barWidth = width / 4 - 10;
+        const maxValue = Math.max(...Object.values(results));
+        const colors = ['#ff6b6b', '#51cf66', '#4dabf7', '#ffd43b'];
+        
+        let x = 10;
+        Object.entries(results).forEach(([key, value], index) => {
+            const barHeight = (value / maxValue) * (height - 40);
+            const y = height - barHeight - 20;
+            
+            // Draw bar
+            ctx.fillStyle = colors[index];
+            ctx.fillRect(x, y, barWidth, barHeight);
+            
+            // Draw label
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(key, x + barWidth/2, height - 5);
+            ctx.fillText(value.toString(), x + barWidth/2, y - 5);
+            
+            x += barWidth + 10;
+        });
+    }
+
+    drawEntanglementVisualization(entanglementValue) {
+        const canvas = document.getElementById('entanglement-canvas');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw entanglement visualization
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const radius = 40;
+        
+        // Draw circle
+        ctx.strokeStyle = '#4dabf7';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Draw entanglement lines
+        ctx.strokeStyle = '#ff6b6b';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * Math.PI) / 4;
+            const x1 = centerX + Math.cos(angle) * (radius - 10);
+            const y1 = centerY + Math.sin(angle) * (radius - 10);
+            const x2 = centerX + Math.cos(angle + Math.PI) * (radius - 10);
+            const y2 = centerY + Math.sin(angle + Math.PI) * (radius - 10);
+            
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+        
+        // Draw entanglement value
+        ctx.fillStyle = '#333';
+        ctx.font = 'bold 14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(entanglementValue.toFixed(3), centerX, centerY + 5);
+    }
+
+    updateBlochSphereVisualization(stateData) {
+        // Update Bloch sphere SVG
+        const svg = document.querySelector('.bloch-svg');
+        if (!svg) return;
+        
+        // Calculate new position based on state
+        const alpha = stateData.alpha;
+        const beta = stateData.beta;
+        
+        // Convert to spherical coordinates
+        const theta = Math.acos(alpha);
+        const phi = Math.atan2(beta, alpha);
+        
+        // Convert to SVG coordinates
+        const x = 150 + 120 * Math.sin(theta) * Math.cos(phi);
+        const y = 150 + 120 * Math.sin(theta) * Math.sin(phi);
+        
+        // Update state vector line
+        const stateVector = svg.querySelector('line[stroke="#1a237e"]');
+        const statePoint = svg.querySelector('circle[fill="#1a237e"]');
+        
+        if (stateVector) {
+            stateVector.setAttribute('x2', x);
+            stateVector.setAttribute('y2', y);
+        }
+        
+        if (statePoint) {
+            statePoint.setAttribute('cx', x);
+            statePoint.setAttribute('cy', y);
+        }
+        
+        // Update state info
+        const equationElement = document.querySelector('.bloch-info .state-equation');
+        const thetaElement = document.querySelector('.bloch-info .detail-item:nth-child(1) .value');
+        const phiElement = document.querySelector('.bloch-info .detail-item:nth-child(2) .value');
+        const fidelityElement = document.querySelector('.bloch-info .detail-item:nth-child(3) .value');
+        
+        if (equationElement) {
+            equationElement.textContent = `|ψ⟩ = ${alpha.toFixed(3)}|0⟩ + ${beta.toFixed(3)}|1⟩`;
+        }
+        
+        if (thetaElement) {
+            thetaElement.textContent = `${(theta * 180 / Math.PI).toFixed(1)}°`;
+        }
+        
+        if (phiElement) {
+            phiElement.textContent = `${(phi * 180 / Math.PI).toFixed(1)}°`;
+        }
+        
+        if (fidelityElement) {
+            fidelityElement.textContent = `${(stateData.fidelity * 100).toFixed(1)}%`;
+        }
+    }
+
+    // Real-time update system
+    async updateAllWidgets() {
+        console.log('Updating all widgets with real-time data...');
+        
+        // Show loading animations
+        this.showLoadingAnimation('backends', 'Loading Quantum Backends...');
+        this.showLoadingAnimation('jobs', 'Loading Active Jobs...');
+        this.showLoadingAnimation('circuit', 'Initializing 3D Quantum Circuit...');
+        this.showLoadingAnimation('entanglement', 'Calculating Entanglement...');
+        this.showLoadingAnimation('results', 'Loading Measurement Results...');
+        this.showLoadingAnimation('bloch', 'Initializing Bloch Sphere...');
+        this.showLoadingAnimation('quantum-state', 'Calculating Quantum State...');
+        this.showLoadingAnimation('performance', 'Analyzing Performance Metrics...');
+        
+        // Fetch all data in parallel
+        const promises = [
+            this.fetchMetrics(),
+            this.fetchMeasurementResults(),
+            this.fetchEntanglementData(),
+            this.fetchQuantumStateData(),
+            this.fetchCircuitData(),
+            this.fetchBackends(),
+            this.fetchJobs()
+        ];
+        
+        try {
+            await Promise.all(promises);
+            console.log('All widgets updated successfully');
+        } catch (error) {
+            console.error('Error updating widgets:', error);
+        }
+    }
+
+    async fetchBackends() {
+        try {
+            const response = await fetch('/api/backends');
+            const data = await response.json();
+            
+            if (data.connected && data.backends) {
+                this.state.backends = data.backends;
+                this.updateBackendsWidget();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching backends:', error);
+            return false;
+        }
+    }
+
+    async fetchJobs() {
+        try {
+            const response = await fetch('/api/jobs');
+            const data = await response.json();
+            
+            if (data.connected && data.jobs) {
+                this.state.jobs = data.jobs;
+                this.updateJobsWidget();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching jobs:', error);
+            return false;
+        }
+    }
+
+    updateBackendsWidget() {
+        const backendsList = document.getElementById('backends-content');
+        if (!backendsList) return;
+        
+        backendsList.innerHTML = '';
+        
+        this.state.backends.forEach(backend => {
+            const backendElement = document.createElement('div');
+            backendElement.className = 'backend-item';
+            backendElement.innerHTML = `
+                <div class="backend-info">
+                    <h4>${backend.name}</h4>
+                    <span class="backend-status ${backend.status}">${backend.status}</span>
+                </div>
+                <div class="backend-details">
+                    <span>Qubits: ${backend.num_qubits}</span>
+                    <span>Jobs: ${backend.pending_jobs}</span>
+                </div>
+            `;
+            backendsList.appendChild(backendElement);
+        });
+        
+        this.hideLoadingAnimation('backends');
+    }
+
+    updateJobsWidget() {
+        const jobsBody = document.getElementById('jobs-body');
+        if (!jobsBody) return;
+        
+        jobsBody.innerHTML = '';
+        
+        this.state.jobs.forEach(job => {
+            const jobRow = document.createElement('tr');
+            jobRow.innerHTML = `
+                <td>${job.id.substring(0, 8)}...</td>
+                <td>${job.backend}</td>
+                <td><span class="status-badge ${job.status.toLowerCase()}">${job.status}</span></td>
+                <td>${job.qubits}</td>
+                <td>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </td>
+                <td>
+                    <button class="action-btn" onclick="viewJobDetails('${job.id}')">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            `;
+            jobsBody.appendChild(jobRow);
+        });
+        
+        this.hideLoadingAnimation('jobs');
+    }
+
+    // Initialize the dashboard
+    async init() {
+        console.log('Initializing Quantum Dashboard...');
+        
+        // Set up event listeners
+        this.setupEventListeners();
+        
+        // Initialize all widgets with enhanced loading
+        await this.initializeAllWidgets();
+        
+        // Start real-time updates
+        this.startRealTimeUpdates();
+    }
+
+    setupEventListeners() {
+        // Widget control buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('[data-action]')) {
+                const action = e.target.closest('[data-action]').dataset.action;
+                this.handleWidgetAction(action);
+            }
+        });
+        
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                document.body.classList.toggle('light-theme');
+            });
+        }
+    }
+
+    handleWidgetAction(action) {
+        switch (action) {
+            case 'refresh-backends':
+            case 'refresh-jobs':
+            case 'refresh-results':
+            case 'refresh-entanglement':
+            case 'refresh-quantum-state':
+            case 'refresh-performance':
+                this.updateAllWidgets();
+                break;
+            case 'reset-bloch':
+                this.resetBlochSphere();
+                break;
+            case 'hadamard':
+                this.applyQuantumGate('H');
+                break;
+            case 'pauli-x':
+                this.applyQuantumGate('X');
+                break;
+            case 'pauli-y':
+                this.applyQuantumGate('Y');
+                break;
+            case 'pauli-z':
+                this.applyQuantumGate('Z');
+                break;
+        }
+    }
+
+    resetBlochSphere() {
+        this.blochState = {
+            theta: Math.PI / 4,
+            phi: 0,
+            alpha: 0.707,
+            beta: 0.707
+        };
+        this.updateBlochSphereVisualization(this.blochState);
+    }
+
+    applyQuantumGate(gate) {
+        // Apply quantum gate to current state
+        const { alpha, beta } = this.blochState;
+        
+        switch (gate) {
+            case 'H': // Hadamard
+                this.blochState.alpha = (alpha + beta) / Math.sqrt(2);
+                this.blochState.beta = (alpha - beta) / Math.sqrt(2);
+                break;
+            case 'X': // Pauli-X
+                this.blochState.alpha = beta;
+                this.blochState.beta = alpha;
+                break;
+            case 'Y': // Pauli-Y
+                this.blochState.alpha = -beta;
+                this.blochState.beta = alpha;
+                break;
+            case 'Z': // Pauli-Z
+                this.blochState.alpha = alpha;
+                this.blochState.beta = -beta;
+                break;
+        }
+        
+        this.updateBlochSphereVisualization(this.blochState);
+    }
+
+    startRealTimeUpdates() {
+        // Update every 30 seconds
+        this.updateInterval = setInterval(() => {
+            this.updateAllWidgets();
+        }, 30000);
+    }
+
+    stopRealTimeUpdates() {
+        if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+            this.updateInterval = null;
+        }
+    }
+
+    // 3D Circuit Widget Enhancement
+    async fetchCircuitData() {
+        try {
+            const response = await fetch('/api/circuit_data');
+            const data = await response.json();
+            
+            if (data.connected && data.circuit_data) {
+                this.state.circuitData = data.circuit_data;
+                this.updateCircuitWidget();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error fetching circuit data:', error);
+            return false;
+        }
+    }
+
+    updateCircuitWidget() {
+        const circuitContainer = document.getElementById('circuit-container');
+        if (!circuitContainer) return;
+
+        // Initialize 3D circuit if not already done
+        if (typeof init3DQuantumCircuit === 'function') {
+            init3DQuantumCircuit();
+        }
+
+        // Set circuit data if available
+        if (this.state.circuitData && typeof setCircuitData === 'function') {
+            setCircuitData(this.state.circuitData);
+        }
+
+        this.hideLoadingAnimation('circuit');
+    }
+
+    // Enhanced widget initialization
+    async initializeAllWidgets() {
+        console.log('Initializing all widgets...');
+        
+        // Show loading animations for all widgets
+        this.showLoadingAnimation('backends', 'Loading Quantum Backends...');
+        this.showLoadingAnimation('jobs', 'Loading Active Jobs...');
+        this.showLoadingAnimation('circuit', 'Initializing 3D Quantum Circuit...');
+        this.showLoadingAnimation('entanglement', 'Calculating Entanglement...');
+        this.showLoadingAnimation('results', 'Loading Measurement Results...');
+        this.showLoadingAnimation('bloch', 'Initializing Bloch Sphere...');
+        this.showLoadingAnimation('quantum-state', 'Calculating Quantum State...');
+        this.showLoadingAnimation('performance', 'Analyzing Performance Metrics...');
+
+        // Initialize widgets in sequence to avoid conflicts
+        try {
+            // Initialize 3D circuit first
+            await this.initializeCircuitWidget();
+            
+            // Then initialize other widgets
+            await this.initializeBlochSphereWidget();
+            
+            // Finally load all data
+            await this.updateAllWidgets();
+            
+            console.log('All widgets initialized successfully');
+        } catch (error) {
+            console.error('Error initializing widgets:', error);
+        }
+    }
+
+    async initializeCircuitWidget() {
+        return new Promise((resolve) => {
+            // Wait for DOM to be ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    this.setupCircuitWidget();
+                    resolve();
+                });
+            } else {
+                this.setupCircuitWidget();
+                resolve();
+            }
+        });
+    }
+
+    setupCircuitWidget() {
+        const circuitContainer = document.getElementById('3d-quantum-circuit');
+        if (!circuitContainer) return;
+
+        // Create circuit interface if it doesn't exist
+        if (!circuitContainer.querySelector('.circuit-3d-container')) {
+            circuitContainer.innerHTML = `
+                <div class="circuit-3d-container">
+                    <div class="circuit-controls">
+                        <div class="control-group">
+                            <button id="add-gate-btn" class="control-btn">
+                                <i class="fas fa-plus"></i> Add Gate
+                            </button>
+                            <button id="clear-circuit-btn" class="control-btn">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button id="reset-view-btn" class="control-btn">
+                                <i class="fas fa-home"></i> Reset View
+                            </button>
+                        </div>
+                        <div class="control-group">
+                            <button id="auto-rotate-btn" class="control-btn">
+                                <i class="fas fa-sync-alt"></i> Auto Rotate
+                            </button>
+                            <button id="fullscreen-btn" class="control-btn">
+                                <i class="fas fa-expand"></i> Fullscreen
+                            </button>
+                        </div>
+                    </div>
+                    <div class="circuit-3d-visualization" id="circuit-3d-plot">
+                        <div class="circuit-loading">
+                            <div class="spinner"></div>
+                            <p>Initializing 3D Circuit...</p>
+                        </div>
+                    </div>
+                    <div class="circuit-info-panel">
+                        <h4>Circuit Information</h4>
+                        <div class="info-item">
+                            <span class="label">Qubits:</span>
+                            <span class="value" id="circuit-qubits">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Depth:</span>
+                            <span class="value" id="circuit-depth">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Gates:</span>
+                            <span class="value" id="circuit-gates">-</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Set up event listeners for circuit controls
+        this.setupCircuitEventListeners();
+    }
+
+    setupCircuitEventListeners() {
+        // Circuit control buttons
+        const addGateBtn = document.getElementById('add-gate-btn');
+        const clearCircuitBtn = document.getElementById('clear-circuit-btn');
+        const resetViewBtn = document.getElementById('reset-view-btn');
+        const autoRotateBtn = document.getElementById('auto-rotate-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        if (addGateBtn) {
+            addGateBtn.addEventListener('click', () => this.addRandomGate());
+        }
+        if (clearCircuitBtn) {
+            clearCircuitBtn.addEventListener('click', () => this.clearCircuit());
+        }
+        if (resetViewBtn) {
+            resetViewBtn.addEventListener('click', () => this.resetCircuitView());
+        }
+        if (autoRotateBtn) {
+            autoRotateBtn.addEventListener('click', () => this.toggleAutoRotate());
+        }
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+        }
+    }
+
+    addRandomGate() {
+        const gates = ['H', 'X', 'Y', 'Z', 'CNOT', 'T', 'S'];
+        const randomGate = gates[Math.floor(Math.random() * gates.length)];
+        const randomQubit = Math.floor(Math.random() * 5);
+        
+        console.log(`Adding ${randomGate} gate to qubit ${randomQubit}`);
+        // This would integrate with the 3D circuit visualization
+    }
+
+    clearCircuit() {
+        console.log('Clearing circuit');
+        // This would clear the 3D circuit visualization
+    }
+
+    resetCircuitView() {
+        console.log('Resetting circuit view');
+        // This would reset the 3D circuit view
+    }
+
+    toggleAutoRotate() {
+        console.log('Toggling auto rotate');
+        // This would toggle auto rotation of the 3D circuit
+    }
+
+    toggleFullscreen() {
+        console.log('Toggling fullscreen');
+        // This would toggle fullscreen mode for the circuit
+    }
+
+    async initializeBlochSphereWidget() {
+        return new Promise((resolve) => {
+            // Initialize Bloch sphere if the library is available
+            if (typeof initBlochSphere === 'function') {
+                initBlochSphere();
+            }
+            resolve();
+        });
     }
 
     async init() {
