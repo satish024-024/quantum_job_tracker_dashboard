@@ -1804,10 +1804,31 @@ def get_circuit_data():
     try:
         # Check if we have a quantum manager with real connection
         if not hasattr(app, 'quantum_manager') or not app.quantum_manager or not app.quantum_manager.is_connected:
-            return jsonify({
+            # Return fallback circuit data when not connected but user has token
+            fallback_circuit = {
+                "circuit": {
+                    "qubits": 5,
+                    "gates": [
+                        {"name": "h", "qubits": [0], "position": 0},
+                        {"name": "cx", "qubits": [0, 1], "position": 1},
+                        {"name": "h", "qubits": [2], "position": 2},
+                        {"name": "cx", "qubits": [1, 2], "position": 3},
+                        {"name": "measure", "qubits": [0, 1, 2], "position": 4}
+                    ],
+                    "depth": 5,
+                    "width": 3
+                },
+                "backend": {
+                    "name": "ibm_brisbane",
+                    "num_qubits": 127,
+                    "operational": False
+                },
+                "real_data": False,
+                "connection_status": "disconnected",
                 "error": "Not connected to IBM Quantum",
                 "message": "Please check your API token and network connection"
-            }), 503
+            }
+            return jsonify(fallback_circuit), 503
         
         # Get real backend information to create appropriate circuit
         quantum_manager = app.quantum_manager
