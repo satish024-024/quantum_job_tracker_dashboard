@@ -84,9 +84,21 @@
                 </div>
                 <div class="metric-content">
                     <h3>Active Backends</h3>
-                    <div class="metric-value" id="active-backends-value">-</div>
+                    <div class="metric-value" id="active-backends-value">
+                        <div class="loading-screen" id="active-backends-loading">
+                            <div class="loading-spinner">
+                                <div class="quantum-spinner">
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="metric-number" style="display: none;">-</span>
+                    </div>
                     <div class="metric-trend">
-                        <span>Loading...</span>
+                        <span class="loading-text">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -97,9 +109,21 @@
                 </div>
                 <div class="metric-content">
                     <h3>Total Jobs</h3>
-                    <div class="metric-value" id="total-jobs-value">-</div>
+                    <div class="metric-value" id="total-jobs-value">
+                        <div class="loading-screen" id="total-jobs-loading">
+                            <div class="loading-spinner">
+                                <div class="quantum-spinner">
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="metric-number" style="display: none;">-</span>
+                    </div>
                     <div class="metric-trend">
-                        <span>Loading...</span>
+                        <span class="loading-text">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -110,9 +134,21 @@
                 </div>
                 <div class="metric-content">
                     <h3>Running Jobs</h3>
-                    <div class="metric-value" id="running-jobs-value">-</div>
+                    <div class="metric-value" id="running-jobs-value">
+                        <div class="loading-screen" id="running-jobs-loading">
+                            <div class="loading-spinner">
+                                <div class="quantum-spinner">
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="metric-number" style="display: none;">-</span>
+                    </div>
                     <div class="metric-trend">
-                        <span>Loading...</span>
+                        <span class="loading-text">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -123,9 +159,21 @@
                 </div>
                 <div class="metric-content">
                     <h3>Queued Jobs</h3>
-                    <div class="metric-value" id="queued-jobs-value">-</div>
+                    <div class="metric-value" id="queued-jobs-value">
+                        <div class="loading-screen" id="queued-jobs-loading">
+                            <div class="loading-spinner">
+                                <div class="quantum-spinner">
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                    <div class="spinner-ring"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="metric-number" style="display: none;">-</span>
+                    </div>
                     <div class="metric-trend">
-                        <span>Loading...</span>
+                        <span class="loading-text">Loading...</span>
                     </div>
                 </div>
             </div>
@@ -153,11 +201,23 @@
                     <!-- Loading Screen -->
                     <div class="loading-screen" id="backends-loading">
                         <div class="loading-spinner">
-                            <div class="spinner-ring"></div>
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
                         </div>
                         <div class="loading-text">Loading Quantum Backends...</div>
+                        <div class="loading-subtext">Connecting to IBM Quantum systems</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
                         <div class="loading-progress">
-                            <div class="progress-bar" id="backends-progress"></div>
+                            <div class="loading-progress-bar" id="backends-progress"></div>
                         </div>
                     </div>
                     <!-- Content -->
@@ -188,11 +248,23 @@
                     <!-- Loading Screen -->
                     <div class="loading-screen" id="jobs-loading">
                         <div class="loading-spinner">
-                            <div class="spinner-ring"></div>
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
                         </div>
                         <div class="loading-text">Loading Active Jobs...</div>
+                        <div class="loading-subtext">Fetching quantum job data</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
                         <div class="loading-progress">
-                            <div class="progress-bar" id="jobs-progress"></div>
+                            <div class="loading-progress-bar" id="jobs-progress"></div>
                         </div>
                     </div>
                     <!-- Content -->
@@ -239,11 +311,23 @@
                     <!-- Loading Screen -->
                     <div class="loading-screen" id="circuit-loading">
                         <div class="loading-spinner">
-                            <div class="spinner-ring"></div>
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
                         </div>
                         <div class="loading-text">Initializing 3D Quantum Circuit...</div>
+                        <div class="loading-subtext">Preparing quantum gates and visualization</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
                         <div class="loading-progress">
-                            <div class="progress-bar" id="circuit-progress"></div>
+                            <div class="loading-progress-bar" id="circuit-progress"></div>
                         </div>
                     </div>
                     <!-- Content -->
@@ -268,9 +352,25 @@
                 </div>
                 <div class="widget-content">
                     <div class="loading-screen" id="entanglement-loading" style="display: none;">
-                        <div class="loading-spinner"><div class="spinner-ring"></div></div>
+                        <div class="loading-spinner">
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
+                        </div>
                         <div class="loading-text">Calculating Entanglement...</div>
-                        <div class="loading-progress"><div class="progress-bar" id="entanglement-progress"></div></div>
+                        <div class="loading-subtext">Analyzing quantum correlations</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
+                        <div class="loading-progress">
+                            <div class="loading-progress-bar" id="entanglement-progress"></div>
+                        </div>
                     </div>
                     <div class="entanglement-visualization" id="entanglement-content">
                         <canvas id="entanglement-canvas" width="300" height="120"></canvas>
@@ -300,9 +400,25 @@
                 </div>
                 <div class="widget-content">
                     <div class="loading-screen" id="results-loading" style="display: none;">
-                        <div class="loading-spinner"><div class="spinner-ring"></div></div>
+                        <div class="loading-spinner">
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
+                        </div>
                         <div class="loading-text">Loading Measurement Results...</div>
-                        <div class="loading-progress"><div class="progress-bar" id="results-progress"></div></div>
+                        <div class="loading-subtext">Processing quantum measurements</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
+                        <div class="loading-progress">
+                            <div class="loading-progress-bar" id="results-progress"></div>
+                        </div>
                     </div>
                     <div class="results-visualization" id="results-content">
                         <canvas id="results-canvas" width="300" height="120"></canvas>
@@ -335,11 +451,23 @@
                     <!-- Loading Screen -->
                     <div class="loading-screen" id="bloch-loading">
                         <div class="loading-spinner">
-                            <div class="spinner-ring"></div>
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
                         </div>
                         <div class="loading-text">Initializing Bloch Sphere...</div>
+                        <div class="loading-subtext">Preparing quantum state visualization</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
                         <div class="loading-progress">
-                            <div class="progress-bar" id="bloch-progress"></div>
+                            <div class="loading-progress-bar" id="bloch-progress"></div>
                         </div>
                     </div>
                     <!-- Content -->
@@ -453,11 +581,23 @@
                     <!-- Loading Screen -->
                     <div class="loading-screen" id="quantum-state-loading">
                         <div class="loading-spinner">
-                            <div class="spinner-ring"></div>
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
                         </div>
                         <div class="loading-text">Calculating Quantum State...</div>
+                        <div class="loading-subtext">Computing state vector coefficients</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
                         <div class="loading-progress">
-                            <div class="progress-bar" id="quantum-state-progress"></div>
+                            <div class="loading-progress-bar" id="quantum-state-progress"></div>
                         </div>
                     </div>
                     <!-- Content -->
@@ -494,11 +634,23 @@
                     <!-- Loading Screen -->
                     <div class="loading-screen" id="performance-loading">
                         <div class="loading-spinner">
-                            <div class="spinner-ring"></div>
+                            <div class="quantum-spinner">
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                                <div class="spinner-ring"></div>
+                            </div>
                         </div>
                         <div class="loading-text">Analyzing Performance Metrics...</div>
+                        <div class="loading-subtext">Computing quantum system statistics</div>
+                        <div class="quantum-dots">
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                            <div class="quantum-dot"></div>
+                        </div>
                         <div class="loading-progress">
-                            <div class="progress-bar" id="performance-progress"></div>
+                            <div class="loading-progress-bar" id="performance-progress"></div>
                         </div>
                     </div>
                     <!-- Content -->

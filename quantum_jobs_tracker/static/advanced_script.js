@@ -58,6 +58,42 @@ class QuantumDashboard {
         if (content) {
             content.style.display = 'block';
         }
+
+        // Update quantum state data if available
+        if (this.state.quantumState) {
+            this.updateQuantumStateData();
+        }
+    }
+
+    updateQuantumStateData() {
+        if (!this.state.quantumState) return;
+
+        const state = this.state.quantumState;
+        
+        // Update state equation
+        const stateEquation = document.querySelector('.state-equation');
+        if (stateEquation && state.state_representation) {
+            stateEquation.textContent = state.state_representation.equation || 'Loading...';
+        }
+
+        // Update state coefficients
+        const alphaElement = document.querySelector('.state-coefficients div:first-child');
+        const betaElement = document.querySelector('.state-coefficients div:last-child');
+        
+        if (alphaElement && state.state_representation) {
+            alphaElement.textContent = `α = ${state.state_representation.alpha || '-'}`;
+        }
+        if (betaElement && state.state_representation) {
+            betaElement.textContent = `β = ${state.state_representation.beta || '-'}`;
+        }
+
+        // Update fidelity
+        const fidelityElement = document.querySelector('.detail-item .value');
+        if (fidelityElement && state.fidelity !== undefined) {
+            fidelityElement.textContent = `${(state.fidelity * 100).toFixed(1)}%`;
+        }
+
+        console.log('✅ Quantum state data updated');
     }
 
     // Show/hide logic for Performance widget
@@ -78,6 +114,39 @@ class QuantumDashboard {
         if (content) {
             content.style.display = 'block';
         }
+
+        // Update performance data if available
+        if (this.state.performance) {
+            this.updatePerformanceData();
+        }
+    }
+
+    updatePerformanceData() {
+        if (!this.state.performance) return;
+
+        const performance = this.state.performance;
+        
+        // Update performance metrics
+        const metricItems = document.querySelectorAll('.performance-metrics .metric-item');
+        metricItems.forEach(item => {
+            const label = item.querySelector('.metric-label');
+            const value = item.querySelector('.metric-value');
+            
+            if (label && value) {
+                const labelText = label.textContent.toLowerCase();
+                if (labelText.includes('success rate')) {
+                    value.textContent = `${performance.success_rate || 0}%`;
+                } else if (labelText.includes('avg runtime')) {
+                    value.textContent = `${performance.avg_runtime || 0}s`;
+                } else if (labelText.includes('error rate')) {
+                    value.textContent = `${performance.error_rate || 0}%`;
+                } else if (labelText.includes('backends')) {
+                    value.textContent = performance.backends || 0;
+                }
+            }
+        });
+
+        console.log('✅ Performance data updated');
     }
     constructor() {
         this.state = {
@@ -86,7 +155,11 @@ class QuantumDashboard {
             quantumState: null,
             circuitData: null,
             isConnected: false,
-            realDataAvailable: false
+            realDataAvailable: false,
+            summaryMetrics: null,
+            entanglementData: null,
+            measurementResults: null,
+            performanceMetrics: null
         };
 
         this.blochCanvas = null;
@@ -95,6 +168,7 @@ class QuantumDashboard {
         this.circuitCtx = null;
         this.animationId = null;
         this.circuitAnimationId = null;
+        this.updateInterval = null;
 
         this.blochState = {
             theta: Math.PI / 4,
@@ -147,6 +221,9 @@ class QuantumDashboard {
         // Start animations and real-time updates
         this.startAnimations();
         this.startRealTimeUpdates();
+
+        // Setup error handling
+        this.setupGlobalErrorHandling();
 
         console.log('✅ Dashboard initialization complete');
     }
@@ -331,8 +408,9 @@ class QuantumDashboard {
             // Check connection status first
             await this.checkConnectionStatus();
 
-            // Load critical data first (backends and jobs)
+            // Load critical data first (summary metrics, backends and jobs)
             await Promise.all([
+                this.loadSummaryMetrics(),
                 this.loadBackends(),
                 this.loadJobs()
             ]);
@@ -344,7 +422,9 @@ class QuantumDashboard {
                 this.loadQuantumState(),
                 this.loadCircuitData(),
                 this.loadResults(),
-                this.loadPerformance()
+                this.loadPerformance(),
+                this.loadEntanglementData(),
+                this.loadMeasurementResults()
             ]).then(() => {
                 console.log('✅ All background data loaded');
                 // Update displays after background data loads
@@ -352,6 +432,7 @@ class QuantumDashboard {
                 this.updateBlochDisplay();
                 this.updateQuantumStateDisplay();
                 this.updatePerformanceDisplay();
+                this.updateEntanglementDisplay();
             }).catch(error => {
                 console.warn('⚠️ Some background data failed to load:', error);
             });
@@ -428,6 +509,81 @@ class QuantumDashboard {
         } catch (error) {
             console.error('❌ Error loading performance data:', error);
             this.state.performance = null;
+        }
+    }
+
+    // Load real-time summary metrics
+    async loadSummaryMetrics() {
+        try {
+            console.log('📊 Loading summary metrics...');
+            const response = await fetch('/api/summary_metrics');
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.success && data.metrics) {
+                this.state.summaryMetrics = data.metrics;
+                this.updateSummaryCards();
+                console.log('✅ Summary metrics loaded:', data.metrics);
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (error) {
+            console.error('❌ Error loading summary metrics:', error);
+            this.state.summaryMetrics = null;
+            this.handleApiError(error, 'summary metrics');
+        }
+    }
+
+    // Load quantum entanglement data
+    async loadEntanglementData() {
+        try {
+            console.log('🔗 Loading entanglement data...');
+            const response = await fetch('/api/entanglement_data');
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.success && data.entanglement_data) {
+                this.state.entanglementData = data.entanglement_data;
+                this.updateEntanglementDisplay();
+                console.log('✅ Entanglement data loaded');
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (error) {
+            console.error('❌ Error loading entanglement data:', error);
+            this.state.entanglementData = null;
+            this.handleApiError(error, 'entanglement data');
+        }
+    }
+
+    // Load measurement results
+    async loadMeasurementResults() {
+        try {
+            console.log('📈 Loading measurement results...');
+            const response = await fetch('/api/measurement_results');
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (data.success && data.measurement_data) {
+                this.state.measurementResults = data.measurement_data;
+                this.updateMeasurementResults();
+                console.log('✅ Measurement results loaded');
+            } else {
+                throw new Error('Invalid response format');
+            }
+        } catch (error) {
+            console.error('❌ Error loading measurement results:', error);
+            this.state.measurementResults = null;
+            this.handleApiError(error, 'measurement results');
         }
     }
 
@@ -616,24 +772,207 @@ class QuantumDashboard {
         }
     }
 
+    // Update summary cards with real-time data
+    updateSummaryCards() {
+        if (!this.state.summaryMetrics) return;
+
+        const metrics = this.state.summaryMetrics;
+        
+        // Update active backends
+        const activeBackendsValue = document.getElementById('active-backends-value');
+        if (activeBackendsValue) {
+            const loading = activeBackendsValue.querySelector('.loading-screen');
+            const number = activeBackendsValue.querySelector('.metric-number');
+            if (loading) loading.style.display = 'none';
+            if (number) {
+                number.textContent = metrics.active_backends;
+                number.style.display = 'block';
+            }
+        }
+
+        // Update total jobs
+        const totalJobsValue = document.getElementById('total-jobs-value');
+        if (totalJobsValue) {
+            const loading = totalJobsValue.querySelector('.loading-screen');
+            const number = totalJobsValue.querySelector('.metric-number');
+            if (loading) loading.style.display = 'none';
+            if (number) {
+                number.textContent = metrics.total_jobs;
+                number.style.display = 'block';
+            }
+        }
+
+        // Update running jobs
+        const runningJobsValue = document.getElementById('running-jobs-value');
+        if (runningJobsValue) {
+            const loading = runningJobsValue.querySelector('.loading-screen');
+            const number = runningJobsValue.querySelector('.metric-number');
+            if (loading) loading.style.display = 'none';
+            if (number) {
+                number.textContent = metrics.running_jobs;
+                number.style.display = 'block';
+            }
+        }
+
+        // Update queued jobs
+        const queuedJobsValue = document.getElementById('queued-jobs-value');
+        if (queuedJobsValue) {
+            const loading = queuedJobsValue.querySelector('.loading-screen');
+            const number = queuedJobsValue.querySelector('.metric-number');
+            if (loading) loading.style.display = 'none';
+            if (number) {
+                number.textContent = metrics.queued_jobs;
+                number.style.display = 'block';
+            }
+        }
+
+        console.log('✅ Summary cards updated with real data');
+    }
+
+    // Update entanglement display
+    updateEntanglementDisplay() {
+        if (!this.state.entanglementData) return;
+
+        const entanglementContent = document.getElementById('entanglement-content');
+        if (!entanglementContent) return;
+
+        const entanglementData = this.state.entanglementData;
+        
+        // Update entanglement visualization
+        const canvas = document.getElementById('entanglement-canvas');
+        if (canvas) {
+            this.drawEntanglementVisualization(canvas, entanglementData);
+        }
+
+        // Update entanglement info
+        const fidelityElement = document.getElementById('entanglement-fidelity');
+        if (fidelityElement && entanglementData.length > 0) {
+            const avgFidelity = entanglementData.reduce((sum, item) => sum + item.fidelity, 0) / entanglementData.length;
+            fidelityElement.textContent = `${(avgFidelity * 100).toFixed(1)}%`;
+        }
+
+        console.log('✅ Entanglement display updated');
+    }
+
+    // Update measurement results
+    updateMeasurementResults() {
+        if (!this.state.measurementResults) return;
+
+        const resultsContent = document.getElementById('results-content');
+        if (!resultsContent) return;
+
+        const measurementData = this.state.measurementResults;
+        
+        // Update results visualization
+        const canvas = document.getElementById('results-canvas');
+        if (canvas && measurementData.results) {
+            this.drawMeasurementResults(canvas, measurementData);
+        }
+
+        // Update results info
+        const shotsElement = document.getElementById('results-shots');
+        const fidelityElement = document.getElementById('results-fidelity');
+        
+        if (shotsElement) {
+            shotsElement.textContent = measurementData.shots || '-';
+        }
+        if (fidelityElement) {
+            fidelityElement.textContent = measurementData.fidelity ? `${(measurementData.fidelity * 100).toFixed(1)}%` : '-';
+        }
+
+        console.log('✅ Measurement results updated');
+    }
+
+    // Draw entanglement visualization
+    drawEntanglementVisualization(canvas, entanglementData) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        if (!entanglementData || entanglementData.length === 0) return;
+
+        // Draw entanglement strength bars
+        const barWidth = width / entanglementData.length;
+        const maxStrength = Math.max(...entanglementData.map(item => item.entanglement_strength));
+
+        entanglementData.forEach((item, index) => {
+            const barHeight = (item.entanglement_strength / maxStrength) * (height - 40);
+            const x = index * barWidth;
+            const y = height - barHeight - 20;
+
+            // Draw bar
+            ctx.fillStyle = `hsl(${item.entanglement_strength * 120}, 70%, 50%)`;
+            ctx.fillRect(x + 5, y, barWidth - 10, barHeight);
+
+            // Draw label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(item.backend.substring(0, 8), x + barWidth / 2, height - 5);
+        });
+    }
+
+    // Draw measurement results
+    drawMeasurementResults(canvas, measurementData) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        if (!measurementData.results) return;
+
+        const results = measurementData.results;
+        const labels = Object.keys(results);
+        const values = Object.values(results);
+        const maxValue = Math.max(...values);
+
+        // Draw bars
+        const barWidth = width / labels.length;
+        const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502'];
+
+        labels.forEach((label, index) => {
+            const barHeight = (values[index] / maxValue) * (height - 40);
+            const x = index * barWidth;
+            const y = height - barHeight - 20;
+
+            // Draw bar
+            ctx.fillStyle = colors[index % colors.length];
+            ctx.fillRect(x + 5, y, barWidth - 10, barHeight);
+
+            // Draw label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x + barWidth / 2, height - 5);
+            ctx.fillText(values[index].toString(), x + barWidth / 2, y - 5);
+        });
+    }
+
     async loadCircuitData() {
         try {
             console.log('Loading circuit data...');
-            const response = await fetch('/api/circuit_data');
+            const response = await fetch('/api/circuit_visualization_data');
 
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
-            const circuitData = await response.json();
-            this.state.circuitData = circuitData;
-
-            this.updateCircuitDisplay();
-
-            console.log('✅ Circuit data loaded');
+            const data = await response.json();
+            if (data.success && data.circuit_data) {
+                this.state.circuitData = data.circuit_data;
+                this.updateCircuitDisplay();
+                console.log('✅ Circuit data loaded:', data.circuit_data);
+            } else {
+                throw new Error('Invalid response format');
+            }
         } catch (error) {
             console.error('❌ Error loading circuit data:', error);
-            this.state.circuitData = [];
+            this.state.circuitData = null;
         }
     }
 
@@ -791,26 +1130,119 @@ class QuantumDashboard {
     }
 
     updateCircuitDisplay() {
-        if (!this.state.circuitData || (Array.isArray(this.state.circuitData) && this.state.circuitData.length === 0)) {
+        if (!this.state.circuitData) {
             const loading = document.getElementById('circuit-loading');
             if (loading) loading.style.display = 'none';
-            const container = document.getElementById('circuit-widget');
-            if (container) container.innerHTML = '<div class="empty-widget">No circuit data available.</div>';
+            const container = document.getElementById('circuit-container');
+            if (container) {
+                container.innerHTML = '<div class="empty-widget">No circuit data available. Connect to IBM Quantum to see real circuits.</div>';
+                container.style.display = 'block';
+            }
             console.error('❌ No circuit data');
             return;
         }
+
         // Show the container and hide loading spinner
         const container = document.getElementById('circuit-container');
         if (container) container.style.display = 'block';
         const loading = document.getElementById('circuit-loading');
         if (loading) loading.style.display = 'none';
-        const circuit = Array.isArray(this.state.circuitData) ? this.state.circuitData[0] : this.state.circuitData;
+
+        const circuit = this.state.circuitData;
+        
         // Update circuit info elements
         const qubitsEl = document.getElementById('circuit-qubits');
         const gatesEl = document.getElementById('circuit-gates');
         const depthEl = document.getElementById('circuit-depth');
-        if (qubitsEl) qubitsEl.textContent = circuit.num_qubits || 'N/A';
+        
+        if (qubitsEl) qubitsEl.textContent = circuit.qubits || 'N/A';
         if (gatesEl) gatesEl.textContent = circuit.gates ? circuit.gates.length : 'N/A';
+        if (depthEl) depthEl.textContent = circuit.depth || 'N/A';
+
+        // Create 3D circuit visualization
+        this.create3DCircuitVisualization(circuit);
+        
+        console.log('✅ Circuit display updated with real data');
+    }
+
+    create3DCircuitVisualization(circuitData) {
+        const container = document.getElementById('3d-quantum-circuit');
+        if (!container || !circuitData.gates) return;
+
+        // Clear existing content
+        container.innerHTML = '';
+
+        // Create circuit visualization
+        const canvas = document.createElement('canvas');
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        container.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        this.draw3DCircuit(ctx, canvas.width, canvas.height, circuitData);
+    }
+
+    draw3DCircuit(ctx, width, height, circuitData) {
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+
+        const numQubits = circuitData.qubits || 5;
+        const gates = circuitData.gates || [];
+        const depth = circuitData.depth || 3;
+
+        // Calculate dimensions
+        const qubitSpacing = height / (numQubits + 1);
+        const gateSpacing = width / (depth + 1);
+
+        // Draw qubit lines
+        ctx.strokeStyle = '#4dabf7';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < numQubits; i++) {
+            const y = qubitSpacing * (i + 1);
+            ctx.beginPath();
+            ctx.moveTo(50, y);
+            ctx.lineTo(width - 50, y);
+            ctx.stroke();
+        }
+
+        // Draw gates
+        gates.forEach(gate => {
+            const x = 50 + (gate.layer + 1) * gateSpacing;
+            const y = qubitSpacing * (gate.qubit + 1);
+
+            ctx.fillStyle = this.getGateColor(gate.type);
+            ctx.beginPath();
+            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Draw gate label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(gate.type.toUpperCase(), x, y + 4);
+        });
+
+        // Draw backend info
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Backend: ${circuitData.backend}`, 10, 20);
+        ctx.fillText(`Qubits: ${numQubits} | Gates: ${gates.length} | Depth: ${depth}`, 10, 40);
+    }
+
+    getGateColor(gateType) {
+        const colors = {
+            'h': '#00d4ff',    // Hadamard - cyan
+            'x': '#ff4757',    // Pauli-X - red
+            'y': '#ffa502',    // Pauli-Y - orange
+            'z': '#2ed573',    // Pauli-Z - green
+            'cx': '#9b59b6',   // CNOT - purple
+            'measure': '#7f8c8d' // Measurement - gray
+        };
+        return colors[gateType] || '#ffffff';
+    }
         if (depthEl) depthEl.textContent = circuit.depth || 'N/A';
         // Pass real circuit data to 3D widget
         if (window.setCircuitData && typeof window.setCircuitData === 'function') {
@@ -1291,14 +1723,29 @@ class QuantumDashboard {
 
     startRealTimeUpdates() {
         // Update all data every 30 seconds
-        setInterval(() => {
+        this.updateInterval = setInterval(() => {
             this.loadAllData();
         }, 30000);
 
-        // Update metrics every 5 seconds
+        // Update summary metrics every 10 seconds
         setInterval(() => {
-            this.updateMetrics();
-        }, 5000);
+            this.loadSummaryMetrics();
+        }, 10000);
+
+        // Update measurement results every 15 seconds
+        setInterval(() => {
+            this.loadMeasurementResults();
+        }, 15000);
+
+        // Update entanglement data every 20 seconds
+        setInterval(() => {
+            this.loadEntanglementData();
+        }, 20000);
+
+        // Update performance metrics every 25 seconds
+        setInterval(() => {
+            this.loadPerformance();
+        }, 25000);
     }
 
     handleResize() {
@@ -2248,6 +2695,175 @@ class QuantumDashboard {
                 // You would fetch and set real performance data here
                 resolve();
             }, 300);
+        });
+    }
+
+    // Comprehensive error handling methods
+    handleApiError(error, context) {
+        console.error(`❌ API Error in ${context}:`, error);
+        
+        // Show user-friendly error message
+        let errorMessage = 'An error occurred while loading data.';
+        
+        if (error.message.includes('401')) {
+            errorMessage = 'Authentication required. Please provide your IBM Quantum API token.';
+        } else if (error.message.includes('403')) {
+            errorMessage = 'Access denied. Please check your IBM Quantum API token.';
+        } else if (error.message.includes('404')) {
+            errorMessage = 'Service not found. Please check your connection.';
+        } else if (error.message.includes('500')) {
+            errorMessage = 'Server error. Please try again later.';
+        } else if (error.message.includes('503')) {
+            errorMessage = 'Service unavailable. IBM Quantum may be temporarily down.';
+        } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+            errorMessage = 'Network error. Please check your internet connection.';
+        }
+        
+        this.showNotification(errorMessage, 'error');
+        return errorMessage;
+    }
+
+    handleWidgetError(widgetName, error) {
+        console.error(`❌ Widget Error in ${widgetName}:`, error);
+        
+        // Hide loading screen
+        const loadingId = `${widgetName.toLowerCase()}-loading`;
+        const loading = document.getElementById(loadingId);
+        if (loading) {
+            loading.style.display = 'none';
+        }
+        
+        // Show error state
+        const container = document.querySelector(`.${widgetName.toLowerCase()}-widget .widget-content`);
+        if (container) {
+            container.innerHTML = `
+                <div class="error-widget">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-message">Failed to load ${widgetName} data</div>
+                    <div class="error-details">${error.message || 'Unknown error'}</div>
+                    <button class="retry-btn" onclick="window.dashboard.retryWidget('${widgetName}')">
+                        <i class="fas fa-redo"></i> Retry
+                    </button>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        this.showNotification(`Failed to load ${widgetName} data`, 'error');
+    }
+
+    retryWidget(widgetName) {
+        console.log(`🔄 Retrying ${widgetName} widget...`);
+        
+        // Show loading screen
+        const loadingId = `${widgetName.toLowerCase()}-loading`;
+        const loading = document.getElementById(loadingId);
+        if (loading) {
+            loading.style.display = 'flex';
+        }
+        
+        // Retry loading the widget data
+        switch (widgetName.toLowerCase()) {
+            case 'backends':
+                this.loadBackends();
+                break;
+            case 'jobs':
+                this.loadJobs();
+                break;
+            case 'quantumstate':
+                this.loadQuantumState();
+                break;
+            case 'circuit':
+                this.loadCircuitData();
+                break;
+            case 'entanglement':
+                this.loadEntanglementData();
+                break;
+            case 'results':
+                this.loadResults();
+                break;
+            case 'performance':
+                this.loadPerformance();
+                break;
+            default:
+                console.warn(`Unknown widget: ${widgetName}`);
+        }
+    }
+
+    showConnectionError() {
+        const statusElement = document.getElementById('connection-status');
+        if (statusElement) {
+            const indicator = statusElement.querySelector('.status-indicator');
+            const textSpan = statusElement.querySelector('span');
+            
+            if (textSpan) textSpan.textContent = 'Connection Error';
+            if (indicator) indicator.className = 'fas fa-circle status-indicator error';
+            statusElement.className = 'connection-status error';
+        }
+        
+        this.showNotification('Failed to connect to IBM Quantum. Please check your API token.', 'error');
+    }
+
+    showDataError(message) {
+        this.showNotification(`Data Error: ${message}`, 'error');
+    }
+
+    // Enhanced notification system
+    showNotification(message, type = 'info', duration = 5000) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <div class="notification-icon">
+                    ${this.getNotificationIcon(type)}
+                </div>
+                <div class="notification-message">${message}</div>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        
+        // Add to notification container
+        let container = document.getElementById('notification-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            container.className = 'notification-container';
+            document.body.appendChild(container);
+        }
+        
+        container.appendChild(notification);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, duration);
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            'success': '✅',
+            'error': '❌',
+            'warning': '⚠️',
+            'info': 'ℹ️'
+        };
+        return icons[type] || icons['info'];
+    }
+
+    // Global error handler
+    setupGlobalErrorHandling() {
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            this.showNotification('An unexpected error occurred', 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            this.showNotification('A network error occurred', 'error');
         });
     }
 }
