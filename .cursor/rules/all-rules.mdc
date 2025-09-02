@@ -1,0 +1,149 @@
+### Quantum-Specific VIBE Patterns
+```python
+# VIBE: Quantum circuit factory pattern
+def bell_state(): return QuantumCircuit(2).h(0).cx(0,1).measure_all()
+def ghz_state(n): return QuantumCircuit(n).h(0).cx(0, range(1,n)).measure_all()
+
+# VIBE: Smart quantum execution with fallbacks
+def run_quantum(circuit, backend=None, shots=1000):
+    backend = backend or get_least_busy_backend()
+    try:
+        return execute(transpile(circuit, backend), backend, shots=shots).result()
+    except Exception as e:
+        return fallback_simulation(circuit, shots)
+
+# VIBE: Quantum state analysis one-liner
+def analyze_results(job): return {bit: counts[bit]/sum(counts.values()) for bit, counts in job.result().get_counts().items()}
+```
+
+```javascript
+// VIBE: Quantum visualization pipeline
+const renderQuantum = (state) => updateBloch(state) && updateCircuit(state) && updateStats(state);
+
+// VIBE: Smart quantum gate builder
+const addGate = (type, qubit) => circuit.gates.push({type, qubit, params: getDefaultParams(type)});
+
+// VIBE: Real-time quantum updates
+const quantum$ = new WebSocket('ws://quantum-api').onmessage = ({data}) => renderQuantum(JSON.parse(data));
+```# Quantum IBM Project Cursor Rules
+
+## Project Context
+Quantum computing app using IBM Qiskit (Python), Flask backend, JavaScript frontend with real-time quantum visualizations.
+
+## ⚡ VIPER CODING RULES (Maximum Speed & Efficiency)
+
+### 🚀 Credit Conservation Strategy
+- **Use autocomplete over chat** - saves 90% credits
+- **Batch questions** - ask everything in one message
+- **Be hyper-specific** - "Add error handling to login with loading states" not "fix this"
+- **Reference files** - use @filename.py for context
+- **Prepare context** - open relevant files before asking
+
+### 🔥 VIBE Standards (Velocity + Intelligence + Best Practices + Efficiency)
+1. **V**elocity: Write fast, clean, working code in first attempt
+2. **I**ntelligence: Smart patterns that anticipate edge cases
+3. **B**est Practices: Follow quantum computing industry standards
+4. **E**fficiency: Maximum output with minimum credits/effort
+
+### ⚡ Ultra-Fast Coding Patterns
+```python
+# VIPER: One-liner with error handling
+result = quantum_job.result() if quantum_job.status().name == 'DONE' else handle_error()
+
+# VIPER: Chain operations efficiently  
+circuit = QuantumCircuit(2).h(0).cx(0,1).measure_all()
+```
+
+### 🎯 Famous Developer Rules Integration
+- **DRY (Don't Repeat Yourself)** - Abstract quantum operations into reusable functions
+- **KISS (Keep It Simple, Stupid)** - Simple quantum circuits work better than complex ones
+- **YAGNI (You Aren't Gonna Need It)** - Only implement quantum features you actually need
+- **Rule of 3** - Refactor after 3rd repetition of quantum code
+- **Single Responsibility** - One quantum function = one job
+- **Fail Fast** - Validate quantum circuits immediately, don't wait
+
+## 💡 CREDIT-EFFICIENT PROMPTING
+
+### Smart Question Templates
+```
+# ✅ GOOD (1 credit, gets everything):
+"Create quantum circuit validator with error handling, transpilation, and execution for IBM backend"
+
+# ❌ BAD (5+ credits):
+"How do I validate circuits?" -> "How do I transpile?" -> "Add error handling?" -> etc.
+```
+
+### Context Management 
+- Open 3-5 relevant files max before asking
+- Use `@quantum_utils.py` to reference specific files
+- Include error messages directly in questions
+- Provide minimal code examples, not full files
+
+## 🔧 Core Requirements
+
+### Python/Qiskit VIBE Standards
+- **Concise imports**: `from qiskit import *` for rapid development
+- **One-liner quantum ops**: `QuantumCircuit(2).h(0).cx(0,1).measure_all()`
+- **Smart error handling**: Use try/except with specific quantum exceptions
+- **Type hints where it matters**: Focus on function signatures only
+- **Async quantum operations**: `async def` for all quantum job operations
+- **Method chaining**: `circuit.h(0).cx(0,1).measure_all()`
+
+### JavaScript VIBE Frontend
+- **Modern ES6+**: Arrow functions, destructuring, template literals
+- **Event delegation**: One listener for multiple quantum gate buttons
+- **Functional approach**: Pure functions for quantum state calculations
+- **Smart defaults**: `const render = (state = defaultQuantumState) => {}`
+- **Efficient DOM updates**: Only update changed quantum visualizations
+- **WebSocket patterns**: Auto-reconnect for quantum job monitoring
+
+### Quantum-Specific Patterns
+```python
+# Always validate and optimize circuits
+def execute_circuit(circuit: QuantumCircuit, backend: Backend) -> Job:
+    validated_circuit = transpile(circuit, backend, optimization_level=3)
+    return backend.run(validated_circuit, shots=1000)
+```
+
+```javascript
+// Real-time quantum state visualization
+class QuantumRenderer {
+    updateBlochSphere(state) {
+        // Render quantum state changes
+    }
+}
+```
+
+## 🛡️ Security Essentials
+- Never store IBM Quantum tokens in plain text
+- Input validation for all quantum parameters
+- Rate limiting on quantum API endpoints
+- HTTPS for all quantum operations
+
+## 📊 Key Features
+- Interactive quantum circuit builder
+- Real-time Bloch sphere visualization  
+- Quantum job queue monitoring
+- IBM Quantum Network integration
+- Quantum measurement statistics
+- Error mitigation display
+
+## 🚀 Performance Rules
+- Optimize quantum circuit depth and gates
+- Cache quantum results appropriately
+- Handle quantum backend failures gracefully
+- Implement proper loading states for quantum ops
+
+## 📁 File Organization
+- `quantum_*.py` for quantum modules
+- `Quantum*.js` for quantum components  
+- Always use proper imports and exports
+
+## ⚡ Complete Implementation Only
+- NO placeholder buttons or components
+- Every quantum operation must be fully functional
+- All UI elements must have working click handlers
+- Proper error handling for quantum hardware issues
+
+## 🎯 Excellence Standard
+Production-ready quantum computing application with real IBM Quantum integration, interactive visualizations, and robust error handling.

@@ -20,4 +20,4 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     print(f"Open your browser and navigate to http://localhost:{port}")
     # Start the Flask app on 0.0.0.0 and correct port for Render
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)  # Fixed: Disabled debug mode for production security

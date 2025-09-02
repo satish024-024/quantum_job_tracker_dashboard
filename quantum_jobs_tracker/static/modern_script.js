@@ -196,7 +196,7 @@ function updateJobsUI() {
     const jobsBody = document.getElementById('jobs-body');
     
     if (!jobsBody || !state.jobs || state.jobs.length === 0) {
-        jobsBody.innerHTML = '<tr><td colspan="6" class="loading">No quantum jobs available<br><span class="error-message">No recent jobs found in your IBM Quantum account</span></td></tr>';
+                        jobsBody.innerHTML = '<tr><td colspan="6" class="loading">No quantum jobs available<br><span class="info-message">This is normal - you can submit new jobs anytime</span></td></tr>';
         return;
     }
     

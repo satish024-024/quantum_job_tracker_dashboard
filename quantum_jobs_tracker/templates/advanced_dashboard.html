@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://r2cdn.perplexity.ai; img-src 'self' data: https:; connect-src 'self' https://api.quantum-computing.ibm.com;">
+    <title>Quantum Jobs Tracker - Advanced Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="static/advanced_style.css">
+    <link rel="stylesheet" href="static/3d_circuit_style.css">
+</head>
+<body class="light-theme">
+    <!-- Real Quantum Data Status Indicator -->
+    
+
+
+    <!-- Header Section -->
+    <header class="dashboard-header">
+        <div class="header-left">
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="logo-container">
+                <i class="fas fa-atom logo-icon"></i>
+                <div class="logo-text">
+                    <h1>Quantum Jobs Tracker</h1>
+                    <span>Advanced Dashboard</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header-center">
+            <div class="connection-status" id="connection-status">
+                <i class="fas fa-circle status-indicator"></i>
+                <span>Connected to IBM Quantum</span>
+            </div>
+        </div>
+        
+        <div class="header-right">
+            <button class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle theme">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="notification-btn" id="notification-btn" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+            </button>
+        </div>
+
+    </header>
+
+    <!-- Simple API Input -->
+    <div class="api-input-container" id="api-input-container" style="display: none;">
+        <div class="api-input-group">
+            <input type="password" 
+                   id="api-token" 
+                   placeholder="Enter IBM Quantum API Token" 
+                   class="api-input"
+                   autocomplete="off"
+                   autocorrect="off"
+                   autocapitalize="off"
+                   spellcheck="false"
+                   maxlength="128"
+                   pattern="[A-Za-z0-9\-_]{20,128}"
+                   title="API token must be 20-128 characters long and contain only letters, numbers, hyphens, and underscores"
+                   required>
+            <button type="button" id="toggle-token-visibility" class="toggle-btn" aria-label="Toggle token visibility">
+                <i class="fas fa-eye"></i>
+            </button>
+            <button type="button" id="save-api" class="save-api-btn" aria-label="Save API token">
+                <i class="fas fa-check"></i>
+                </button>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-main">
+        <!-- Metrics Row -->
+        <section class="metrics-section">
+            <div class="metric-card" data-metric="active-backends">
+                <div class="metric-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Active Backends</h3>
+                    <div class="metric-value" id="active-backends-value">-</div>
+                    <div class="metric-trend">
+                        <span>Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card" data-metric="total-jobs">
+                <div class="metric-icon">
+                    <i class="fas fa-list-ul"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Total Jobs</h3>
+                    <div class="metric-value" id="total-jobs-value">-</div>
+                    <div class="metric-trend">
+                        <span>Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card" data-metric="running-jobs">
+                <div class="metric-icon">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Running Jobs</h3>
+                    <div class="metric-value" id="running-jobs-value">-</div>
+                    <div class="metric-trend">
+                        <span>Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card" data-metric="queued-jobs">
+                <div class="metric-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="metric-content">
+                    <h3>Queued Jobs</h3>
+                    <div class="metric-value" id="queued-jobs-value">-</div>
+                    <div class="metric-trend">
+                        <span>Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Widgets Grid -->
+        <section class="widgets-grid">
+            <!-- Quantum Backends Widget -->
+            <div class="widget-container backends-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-server"></i> Quantum Backends</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh-backends">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="add-backend">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="widget-btn" data-action="backend-settings">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- Loading Screen -->
+                    <div class="loading-screen" id="backends-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <div class="loading-text">Loading Quantum Backends...</div>
+                        <div class="loading-progress">
+                            <div class="progress-bar" id="backends-progress"></div>
+                        </div>
+                    </div>
+                    <!-- Content -->
+                    <div class="backends-list" id="backends-content" style="display: none;">
+                        <!-- Backends will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Jobs Widget -->
+            <div class="widget-container jobs-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-tasks"></i> Active Jobs</h2>
+                    <div class="widget-controls">
+                        <div class="search-container">
+                            <input type="text" placeholder="Search jobs..." class="search-input" id="jobs-search">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <button class="widget-btn" data-action="export">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="widget-btn" data-action="clear-jobs">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- Loading Screen -->
+                    <div class="loading-screen" id="jobs-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <div class="loading-text">Loading Active Jobs...</div>
+                        <div class="loading-progress">
+                            <div class="progress-bar" id="jobs-progress"></div>
+                        </div>
+                    </div>
+                    <!-- Content -->
+                    <div class="table-container" id="jobs-content" style="display: none;">
+                        <table class="jobs-table" id="jobs-table">
+                            <thead>
+                                <tr>
+                                    <th>Job ID</th>
+                                    <th>Backend</th>
+                                    <th>Status</th>
+                                    <th>Qubits</th>
+                                    <th>Progress</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobs-body">
+                                <!-- Jobs will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D Quantum Circuit Widget -->
+            <div class="widget-container circuit-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-cube"></i> 3D Quantum Circuit</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="play-pause" id="circuit-play">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="widget-btn" data-action="step">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                        <button class="widget-btn" data-action="reset">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button class="widget-btn" data-action="expand-circuit" id="expand-circuit-btn">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- Loading Screen -->
+                    <div class="loading-screen" id="circuit-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <div class="loading-text">Initializing 3D Quantum Circuit...</div>
+                        <div class="loading-progress">
+                            <div class="progress-bar" id="circuit-progress"></div>
+                        </div>
+                    </div>
+                    <!-- Content -->
+                    <div class="circuit-container" id="circuit-container" style="min-height: 400px; position: relative; display: none;">
+                        <div id="3d-quantum-circuit" style="width: 100%; height: 400px; position: relative; overflow: hidden;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entanglement Widget -->
+            <div class="widget-container entanglement-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-link"></i> Entanglement</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh-entanglement">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="calculate-entanglement">
+                            <i class="fas fa-calculator"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="loading-screen" id="entanglement-loading" style="display: none;">
+                        <div class="loading-spinner"><div class="spinner-ring"></div></div>
+                        <div class="loading-text">Calculating Entanglement...</div>
+                        <div class="loading-progress"><div class="progress-bar" id="entanglement-progress"></div></div>
+                    </div>
+                    <div class="entanglement-visualization" id="entanglement-content">
+                        <canvas id="entanglement-canvas" width="300" height="120"></canvas>
+                        <div class="entanglement-info">
+                            <span class="entanglement-label">Loading...</span>
+                            <span class="entanglement-fidelity">Fidelity: <span id="entanglement-fidelity">-</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Widget -->
+            <div class="widget-container results-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-chart-bar"></i> Results</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh-results">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="export-results">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="widget-btn" data-action="clear-results">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="loading-screen" id="results-loading" style="display: none;">
+                        <div class="loading-spinner"><div class="spinner-ring"></div></div>
+                        <div class="loading-text">Loading Measurement Results...</div>
+                        <div class="loading-progress"><div class="progress-bar" id="results-progress"></div></div>
+                    </div>
+                    <div class="results-visualization" id="results-content">
+                        <canvas id="results-canvas" width="300" height="120"></canvas>
+                        <div class="results-info">
+                            <span class="results-label">Loading...</span>
+                            <span class="results-shots">Shots: <span id="results-shots">-</span></span>
+                            <span class="results-fidelity">Fidelity: <span id="results-fidelity">-</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloch Sphere Widget -->
+            <div class="widget-container bloch-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-globe"></i> 3D Bloch Sphere</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="reset-bloch">
+                            <i class="fas fa-home"></i>
+                        </button>
+                        <button class="widget-btn" data-action="rotate-bloch">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="widget-btn" data-action="expand-bloch" id="expand-bloch-btn">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- Loading Screen -->
+                    <div class="loading-screen" id="bloch-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <div class="loading-text">Initializing Bloch Sphere...</div>
+                        <div class="loading-progress">
+                            <div class="progress-bar" id="bloch-progress"></div>
+                        </div>
+                    </div>
+                    <!-- Content -->
+                    <div class="bloch-container" id="bloch-container" style="display: none;">
+                        <!-- 3D Bloch Sphere Container -->
+                        <div id="bloch-3d-container" style="width: 100%; height: 300px; position: relative;"></div>
+                        
+                        <!-- Bloch Sphere Diagram -->
+                        <div class="bloch-diagram-container">
+                            <div class="bloch-sphere-diagram" id="bloch-sphere-diagram">
+                                <svg width="300" height="300" viewBox="0 0 300 300" class="bloch-svg">
+                                    <!-- Sphere outline -->
+                                    <circle cx="150" cy="150" r="120" fill="none" stroke="#4dabf7" stroke-width="2" opacity="0.3"/>
+                                    
+                                    <!-- Coordinate axes -->
+                                    <line x1="30" y1="150" x2="270" y2="150" stroke="#ff6b6b" stroke-width="2" opacity="0.6"/>
+                                    <line x1="150" y1="30" x2="150" y2="270" stroke="#51cf66" stroke-width="2" opacity="0.6"/>
+                                    <line x1="90" y1="90" x2="210" y2="210" stroke="#ffd43b" stroke-width="2" opacity="0.6"/>
+                                    
+                                    <!-- Axis labels -->
+                                    <text x="280" y="155" fill="#ff6b6b" font-size="12" font-weight="bold">X</text>
+                                    <text x="155" y="25" fill="#51cf66" font-size="12" font-weight="bold">Y</text>
+                                    <text x="220" y="220" fill="#ffd43b" font-size="12" font-weight="bold">Z</text>
+                                    
+                                    <!-- North and South poles -->
+                                    <circle cx="150" cy="30" r="4" fill="#4dabf7"/>
+                                    <circle cx="150" cy="270" r="4" fill="#4dabf7"/>
+                                    <text x="155" y="35" fill="#4dabf7" font-size="10">|0⟩</text>
+                                    <text x="155" y="275" fill="#4dabf7" font-size="10">|1⟩</text>
+                                    
+                                    <!-- Quantum state vector -->
+                                    <line x1="150" y1="150" x2="200" y2="100" stroke="#1a237e" stroke-width="3" marker-end="url(#arrowhead)"/>
+                                    <circle cx="200" cy="100" r="3" fill="#1a237e"/>
+                                    
+                                    <!-- Arrow marker definition -->
+                                    <defs>
+                                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                            <polygon points="0 0, 10 3.5, 0 7" fill="#1a237e"/>
+                                        </marker>
+                                    </defs>
+                                    
+                                    <!-- Grid lines for better visualization -->
+                                    <circle cx="150" cy="150" r="60" fill="none" stroke="#4dabf7" stroke-width="1" opacity="0.2"/>
+                                    <circle cx="150" cy="150" r="90" fill="none" stroke="#4dabf7" stroke-width="1" opacity="0.2"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <!-- Quantum State Info -->
+                        <div class="bloch-info" id="bloch-info">
+                            <div class="quantum-state">
+                                <span class="state-equation">Loading...</span>
+                            </div>
+                            <div class="state-details">
+                                <div class="detail-item">
+                                    <span class="label">θ:</span>
+                                    <span class="value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">φ:</span>
+                                    <span class="value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Fidelity:</span>
+                                    <span class="value">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Simple Controls -->
+                        <div class="bloch-simple-controls">
+                            <div class="control-group">
+                                <h4>Quantum Gates</h4>
+                                <div class="gate-buttons">
+                                    <button class="gate-btn" data-action="hadamard">H</button>
+                                    <button class="gate-btn" data-action="pauli-x">X</button>
+                                    <button class="gate-btn" data-action="pauli-y">Y</button>
+                                    <button class="gate-btn" data-action="pauli-z">Z</button>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <h4>State</h4>
+                                <div class="state-buttons">
+                                    <button class="gate-btn" data-action="reset-state">|0⟩</button>
+                                    <button class="gate-btn" data-action="set-plus">|+⟩</button>
+                                    <button class="gate-btn" data-action="set-minus">|-⟩</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantum State Widget -->
+            <div class="widget-container quantum-state-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-atom"></i> Quantum State</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh-quantum-state">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="calculate-state">
+                            <i class="fas fa-calculator"></i>
+                        </button>
+                        <button class="widget-btn" data-action="export-state">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- Loading Screen -->
+                    <div class="loading-screen" id="quantum-state-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <div class="loading-text">Calculating Quantum State...</div>
+                        <div class="loading-progress">
+                            <div class="progress-bar" id="quantum-state-progress"></div>
+                        </div>
+                    </div>
+                    <!-- Content -->
+                    <div class="quantum-state-display" id="quantum-state-display" style="display: none;">
+                        <div class="state-vector">
+                            <h3>State Vector</h3>
+                            <div class="state-equation">Loading...</div>
+                            <div class="state-coefficients">
+                                <div>α = -</div>
+                                <div>β = -</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Widget -->
+            <div class="widget-container performance-widget">
+                <div class="widget-header">
+                    <h2><i class="fas fa-chart-line"></i> Performance</h2>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh-performance">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="export-performance">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="widget-btn" data-action="performance-settings">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <!-- Loading Screen -->
+                    <div class="loading-screen" id="performance-loading">
+                        <div class="loading-spinner">
+                            <div class="spinner-ring"></div>
+                        </div>
+                        <div class="loading-text">Analyzing Performance Metrics...</div>
+                        <div class="loading-progress">
+                            <div class="progress-bar" id="performance-progress"></div>
+                        </div>
+                    </div>
+                    <!-- Content -->
+                    <div class="performance-metrics" id="performance-metrics" style="display: none;">
+                        <div class="metric-item">
+                            <span class="metric-label">Success Rate</span>
+                            <span class="metric-value">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Avg Runtime</span>
+                            <span class="metric-value">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Error Rate</span>
+                            <span class="metric-value">-</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Backends</span>
+                            <span class="metric-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" id="notification-panel">
+        <div class="notification-header">
+            <h3>Notifications</h3>
+            <button class="close-btn" id="close-notifications">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="notification-list" id="notification-list">
+            <!-- Notifications will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content" id="modal-content">
+            <!-- Modal content will be dynamically inserted -->
+        </div>
+    </div>
+
+    <!-- Scroll indicators removed -->
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    
+    <!-- Math.js for quantum calculations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    
+    <!-- Plotly.js for 3D Bloch sphere -->
+    <script src="static/plotly-2.16.1.min.js" defer></script>
+    
+    <!-- Bloch sphere implementation from https://github.com/kherb27/Blochy.git -->
+    <script src="static/bloch_quantum.js"></script>
+    <script src="static/bloch_plot.js"></script>
+    
+    <!-- Full-Screen Bloch Sphere Overlay -->
+    <div id="fullscreen-bloch-overlay" class="fullscreen-bloch-overlay" style="display: none;">
+        <div class="fullscreen-bloch-header">
+            <div class="fullscreen-bloch-title">
+                <i class="fas fa-globe"></i>
+                <h1>3D Bloch Sphere</h1>
+            </div>
+            <div class="fullscreen-bloch-controls">
+                <button class="fullscreen-btn" data-action="reset-bloch-view">
+                    <i class="fas fa-home"></i>
+                </button>
+                <button class="fullscreen-btn" data-action="toggle-fullscreen-bloch">
+                    <i class="fas fa-compress-arrows-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="fullscreen-bloch-content">
+            <div class="fullscreen-bloch-visualization">
+                <div id="fullscreen-bloch-3d-container" style="width: 100%; height: 100%;"></div>
+            </div>
+            
+            <div class="fullscreen-bloch-sidebar">
+                <div class="control-section">
+                    <h3>Quantum State Info</h3>
+                    <div class="quantum-state-fullscreen">
+                        <span class="state-equation-fullscreen">|ψ⟩ = 1.000|0⟩ + 0.000e^{i3.14}|1⟩</span>
+                    </div>
+                    <div class="state-details-fullscreen">
+                        <div class="detail-item-fullscreen">
+                            <span class="label">θ:</span>
+                            <span class="value">π/2</span>
+                        </div>
+                        <div class="detail-item-fullscreen">
+                            <span class="label">φ:</span>
+                            <span class="value">0.000π</span>
+                        </div>
+                        <div class="detail-item-fullscreen">
+                            <span class="label">Fidelity:</span>
+                            <span class="value">1.000π</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Rotations</h3>
+                    <div class="axis-control">
+                        <label>X axis:</label>
+                        <div class="rotation-buttons">
+                            <button class="gate-btn" data-action="rotate-x" data-angle="1.5708">+90°</button>
+                            <button class="gate-btn" data-action="rotate-x" data-angle="-1.5708">-90°</button>
+                            <button class="gate-btn" data-action="rotate-x" data-angle="3.1416">+180°</button>
+                        </div>
+                        <div class="custom-angle">
+                            <input type="number" id="x_angle_fullscreen" placeholder="45" value="45">°
+                            <button class="gate-btn apply-btn" data-action="custom-rotate" data-axis="x">Apply</button>
+                        </div>
+                    </div>
+                    
+                    <div class="axis-control">
+                        <label>Y axis:</label>
+                        <div class="rotation-buttons">
+                            <button class="gate-btn" data-action="rotate-y" data-angle="1.5708">+90°</button>
+                            <button class="gate-btn" data-action="rotate-y" data-angle="-1.5708">-90°</button>
+                            <button class="gate-btn" data-action="rotate-y" data-angle="3.1416">+180°</button>
+                        </div>
+                        <div class="custom-angle">
+                            <input type="number" id="y_angle_fullscreen" placeholder="45">°
+                            <button class="gate-btn apply-btn" data-action="custom-rotate" data-axis="y">Apply</button>
+                        </div>
+                    </div>
+                    
+                    <div class="axis-control">
+                        <label>Z axis:</label>
+                        <div class="rotation-buttons">
+                            <button class="gate-btn" data-action="rotate-z" data-angle="1.5708">+90°</button>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="-1.5708">-90°</button>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="3.1416">+180°</button>
+                        </div>
+                        <div class="custom-angle">
+                            <input type="number" id="z_angle_fullscreen" placeholder="45" value="45">°
+                            <button class="gate-btn apply-btn" data-action="custom-rotate" data-axis="z">Apply</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Quantum Gates</h3>
+                    <div class="gate-controls-fullscreen">
+                        <div class="gate-row-fullscreen">
+                            <span>Pauli:</span>
+                            <button class="gate-btn" data-action="rotate-x" data-angle="3.1416">X</button>
+                            <button class="gate-btn" data-action="rotate-y" data-angle="3.1416">Y</button>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="3.1416">Z</button>
+                        </div>
+                        <div class="gate-row-fullscreen">
+                            <span>Hadamard:</span>
+                            <button class="gate-btn" data-action="hadamard">H</button>
+                        </div>
+                        <div class="gate-row-fullscreen">
+                            <span>Phase:</span>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="1.5708">S</button>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="-1.5708">S†</button>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="0.7854">T</button>
+                            <button class="gate-btn" data-action="rotate-z" data-angle="-0.7854">T†</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <h3>Actions</h3>
+                    <div class="action-buttons-fullscreen">
+                        <button class="gate-btn" data-action="restart">Init</button>
+                        <button class="gate-btn" data-action="undo">Undo</button>
+                        <button class="gate-btn" data-action="export-png">Download PNG</button>
+                        <button class="gate-btn" data-action="download-state">Download JSON</button>
+                        <button class="gate-btn" data-action="toggle-phosphor">Toggle History</button>
+                        <button class="gate-btn" data-action="clear-history">Clear History</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bloch Sphere JavaScript Files - Load in correct dependency order -->
+    <script src="static/plotly-gl3d-2.16.1.min.js"></script>
+    <script src="static/3d_quantum_circuit.js"></script>
+    <script src="static/bloch_quantum.js"></script>
+    <script src="static/bloch_plot.js"></script>
+    <script src="static/bloch_ui.js"></script>
+    
+    <!-- Main dashboard script - loaded last -->
+    <script src="static/advanced_script.js"></script>
+    
+    <script>
+        // Add keyboard shortcut for fullscreen toggle (ESC key)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const overlay = document.getElementById('fullscreen-bloch-overlay');
+                if (overlay && overlay.style.display !== 'none') {
+                    toggleFullscreenBloch();
+                }
+            }
+        });
+    </script>
+    
+    <!-- Initialize Dashboard and Loading System -->
+    <script>
+        // Initialize dashboard instance
+        let dashboard;
+        
+        // Wait for all scripts to load
+        window.addEventListener('load', function() {
+            console.log('🚀 Window loaded, initializing dashboard...');
+            
+            // Check if QuantumDashboard class is available
+            if (typeof QuantumDashboard === 'undefined') {
+                console.error('❌ QuantumDashboard class not available');
+                return;
+            }
+            
+            // Initialize the main dashboard
+            try {
+                dashboard = new QuantumDashboard();
+                console.log('✅ Dashboard initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing dashboard:', error);
+                return;
+            }
+            
+            // Initialize 3D Quantum Circuit
+            if (typeof init3DQuantumCircuit === 'function') {
+                console.log('🚀 Initializing 3D Quantum Circuit...');
+                try {
+                    init3DQuantumCircuit();
+                } catch (error) {
+                    console.error('❌ Error initializing 3D Quantum Circuit:', error);
+                }
+            } else {
+                console.warn('⚠️ init3DQuantumCircuit function not available');
+            }
+            
+            // Initialize Bloch sphere
+            if (typeof init_bloch_sphere === 'function') {
+                console.log('🚀 Initializing Bloch sphere...');
+                try {
+                    init_bloch_sphere();
+                } catch (error) {
+                    console.error('❌ Error initializing Bloch sphere:', error);
+                }
+            } else {
+                console.warn('⚠️ init_bloch_sphere function not available');
+            }
+            
+            // Force Bloch sphere diagram rendering as fallback
+            if (typeof createSimpleBlochSphere === 'function') {
+                try {
+                    createSimpleBlochSphere();
+                } catch (error) {
+                    console.error('❌ Error creating fallback Bloch sphere:', error);
+                }
+            }
+        });
+    </script>
+    
+</body>
+</html>
+        
