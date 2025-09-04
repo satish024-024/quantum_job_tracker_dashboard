@@ -688,6 +688,91 @@
             }
         }
 
+        /* Chat Interface Styles */
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            max-height: 200px;
+        }
+
+        .message {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            max-width: 80%;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .ai-message .message-content {
+            background: var(--quantum-gradient);
+            color: white;
+        }
+
+        .user-message .message-content {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-btn {
+            padding: 0.75rem;
+            background: var(--quantum-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.05);
+        }
+
         /* Animation Classes */
         .fade-in {
             animation: fadeIn 0.5s ease-in;
@@ -852,12 +937,12 @@
                 </div>
             </div>
 
-            <!-- 3D Bloch Sphere Widget -->
+            <!-- 3D Bloch Sphere Widget (Blochy Integration) -->
             <div class="widget fade-in" data-widget="bloch-sphere">
                 <div class="widget-header">
                     <h3 class="widget-title">
                         <i class="fas fa-globe"></i>
-                        3D Bloch Sphere
+                        3D Bloch Sphere (Blochy)
                     </h3>
                     <div class="widget-controls">
                         <button class="widget-btn" data-action="refresh" title="Refresh">
@@ -877,20 +962,21 @@
                 <div class="widget-content">
                     <div class="loading" id="bloch-loading">
                         <div class="spinner"></div>
-                        <span>Loading 3D visualization...</span>
+                        <span>Loading Blochy sphere...</span>
                     </div>
                     <div class="visualization-container" id="bloch-content" style="display: none;">
-                        <!-- 3D Bloch sphere will be rendered here -->
+                        <!-- Blochy 3D sphere will be rendered here -->
+                        <div id="bloch-3d-container" style="width: 100%; height: 300px; position: relative;"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Quantum Circuit Widget -->
+            <!-- 3D Quantum Circuit Widget -->
             <div class="widget fade-in" data-widget="circuit">
                 <div class="widget-header">
                     <h3 class="widget-title">
-                        <i class="fas fa-project-diagram"></i>
-                        Quantum Circuit
+                        <i class="fas fa-cube"></i>
+                        3D Quantum Circuit
                     </h3>
                     <div class="widget-controls">
                         <button class="widget-btn" data-action="refresh" title="Refresh">
@@ -910,10 +996,110 @@
                 <div class="widget-content">
                     <div class="loading" id="circuit-loading">
                         <div class="spinner"></div>
-                        <span>Loading circuit visualization...</span>
+                        <span>Loading 3D circuit...</span>
                     </div>
                     <div class="visualization-container" id="circuit-content" style="display: none;">
-                        <!-- Circuit visualization will be rendered here -->
+                        <!-- 3D Circuit visualization will be rendered here -->
+                        <div id="3d-quantum-circuit" style="width: 100%; height: 300px; position: relative;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Entanglement Analysis Widget -->
+            <div class="widget fade-in" data-widget="entanglement">
+                <div class="widget-header">
+                    <h3 class="widget-title">
+                        <i class="fas fa-link"></i>
+                        Entanglement Analysis
+                    </h3>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="popup" title="Popup View">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="remove" title="Remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="loading" id="entanglement-loading">
+                        <div class="spinner"></div>
+                        <span>Loading entanglement data...</span>
+                    </div>
+                    <div id="entanglement-content" style="display: none;">
+                        <!-- Entanglement analysis will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Widget -->
+            <div class="widget fade-in" data-widget="results">
+                <div class="widget-header">
+                    <h3 class="widget-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Measurement Results
+                    </h3>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="popup" title="Popup View">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="remove" title="Remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="loading" id="results-loading">
+                        <div class="spinner"></div>
+                        <span>Loading measurement results...</span>
+                    </div>
+                    <div id="results-content" style="display: none;">
+                        <!-- Results will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quantum State Widget -->
+            <div class="widget fade-in" data-widget="quantum-state">
+                <div class="widget-header">
+                    <h3 class="widget-title">
+                        <i class="fas fa-atom"></i>
+                        Quantum State
+                    </h3>
+                    <div class="widget-controls">
+                        <button class="widget-btn" data-action="refresh" title="Refresh">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="popup" title="Popup View">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                            <i class="fas fa-external-link-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="remove" title="Remove">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <div class="loading" id="quantum-state-loading">
+                        <div class="spinner"></div>
+                        <span>Loading quantum state...</span>
+                    </div>
+                    <div id="quantum-state-content" style="display: none;">
+                        <!-- Quantum state will be loaded here -->
                     </div>
                 </div>
             </div>
@@ -951,12 +1137,12 @@
                 </div>
             </div>
 
-            <!-- Entanglement Analysis Widget -->
-            <div class="widget fade-in" data-widget="entanglement">
+            <!-- AI Chat Widget -->
+            <div class="widget fade-in" data-widget="ai-chat">
                 <div class="widget-header">
                     <h3 class="widget-title">
-                        <i class="fas fa-link"></i>
-                        Entanglement Analysis
+                        <i class="fas fa-robot"></i>
+                        AI Assistant
                     </h3>
                     <div class="widget-controls">
                         <button class="widget-btn" data-action="refresh" title="Refresh">
@@ -974,12 +1160,28 @@
                     </div>
                 </div>
                 <div class="widget-content">
-                    <div class="loading" id="entanglement-loading">
+                    <div class="loading" id="ai-chat-loading">
                         <div class="spinner"></div>
-                        <span>Loading entanglement data...</span>
+                        <span>Initializing AI assistant...</span>
                     </div>
-                    <div id="entanglement-content" style="display: none;">
-                        <!-- Entanglement analysis will be loaded here -->
+                    <div id="ai-chat-content" style="display: none;">
+                        <!-- AI Chat interface will be loaded here -->
+                        <div class="chat-container">
+                            <div class="chat-messages" id="chat-messages">
+                                <div class="message ai-message">
+                                    <div class="message-content">
+                                        <i class="fas fa-robot"></i>
+                                        Hello! I'm your quantum computing AI assistant. Ask me anything about quantum states, circuits, or quantum computing concepts!
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chat-input-container">
+                                <input type="text" id="chat-input" placeholder="Ask about quantum computing..." class="chat-input">
+                                <button id="send-message" class="send-btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1025,19 +1227,13 @@
                     </button>
                 </li>
                 <li class="widget-item" data-widget="bloch-sphere">
-                    <span><i class="fas fa-globe"></i> 3D Bloch Sphere</span>
+                    <span><i class="fas fa-globe"></i> 3D Bloch Sphere (Blochy)</span>
                     <button class="widget-btn" data-action="add">
                         <i class="fas fa-plus"></i>
                     </button>
                 </li>
                 <li class="widget-item" data-widget="circuit">
-                    <span><i class="fas fa-project-diagram"></i> Quantum Circuit</span>
-                    <button class="widget-btn" data-action="add">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </li>
-                <li class="widget-item" data-widget="performance">
-                    <span><i class="fas fa-chart-line"></i> Performance</span>
+                    <span><i class="fas fa-cube"></i> 3D Quantum Circuit</span>
                     <button class="widget-btn" data-action="add">
                         <i class="fas fa-plus"></i>
                     </button>
@@ -1048,11 +1244,52 @@
                         <i class="fas fa-plus"></i>
                     </button>
                 </li>
+                <li class="widget-item" data-widget="results">
+                    <span><i class="fas fa-chart-bar"></i> Measurement Results</span>
+                    <button class="widget-btn" data-action="add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </li>
+                <li class="widget-item" data-widget="quantum-state">
+                    <span><i class="fas fa-atom"></i> Quantum State</span>
+                    <button class="widget-btn" data-action="add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </li>
+                <li class="widget-item" data-widget="performance">
+                    <span><i class="fas fa-chart-line"></i> Performance</span>
+                    <button class="widget-btn" data-action="add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </li>
+                <li class="widget-item" data-widget="ai-chat">
+                    <span><i class="fas fa-robot"></i> AI Assistant</span>
+                    <button class="widget-btn" data-action="add">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </li>
             </ul>
         </div>
     </div>
 
     <!-- Scripts -->
+    <!-- Math.js for quantum calculations -->
+    <script src="https://unpkg.com/mathjs@11.11.0/lib/browser/math.min.js"></script>
+    
+    <!-- Blochy Integration -->
+    <script src="../blochy-source/quantum.js"></script>
+    <script src="../blochy-source/plot.js"></script>
+    <script src="../blochy-source/ui.js"></script>
+    <script src="../blochy-source/helper.js"></script>
+    
+    <!-- 3D Circuit -->
+    <script src="static/3d_quantum_circuit.js"></script>
+    
+    <!-- Enhanced Bloch Integration -->
+    <script src="static/bloch_quantum.js"></script>
+    <script src="static/bloch_ui.js"></script>
+    
+    <!-- Main Dashboard Script -->
     <script src="static/hackathon_dashboard.js"></script>
 </body>
 </html>

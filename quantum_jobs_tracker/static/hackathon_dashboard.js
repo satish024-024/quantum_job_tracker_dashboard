@@ -284,7 +284,7 @@ class HackathonDashboard {
     }
 
     async updateAllWidgets() {
-        const widgets = ['backends', 'jobs', 'bloch-sphere', 'circuit', 'performance', 'entanglement'];
+        const widgets = ['backends', 'jobs', 'bloch-sphere', 'circuit', 'performance', 'entanglement', 'results', 'quantum-state', 'ai-chat'];
         
         for (const widgetType of widgets) {
             if (this.widgets.has(widgetType)) {
@@ -323,6 +323,15 @@ class HackathonDashboard {
                     break;
                 case 'entanglement':
                     await this.updateEntanglementWidget();
+                    break;
+                case 'results':
+                    await this.updateResultsWidget();
+                    break;
+                case 'quantum-state':
+                    await this.updateQuantumStateWidget();
+                    break;
+                case 'ai-chat':
+                    await this.updateAIChatWidget();
                     break;
             }
 
@@ -400,6 +409,25 @@ class HackathonDashboard {
         const contentElement = document.getElementById('bloch-content');
         if (!contentElement) return;
 
+        try {
+            // Initialize Blochy sphere if available
+            if (typeof init_bloch_sphere === 'function') {
+                console.log('🚀 Initializing Blochy sphere...');
+                await init_bloch_sphere();
+                console.log('✅ Blochy sphere initialized');
+            } else {
+                // Fallback to enhanced Plotly sphere
+                console.log('🔄 Using enhanced Plotly sphere as fallback...');
+                await this.createEnhancedBlochSphereFallback(contentElement);
+            }
+        } catch (error) {
+            console.error('Error initializing Bloch sphere:', error);
+            // Final fallback
+            await this.createEnhancedBlochSphereFallback(contentElement);
+        }
+    }
+
+    async createEnhancedBlochSphereFallback(container) {
         try {
             // Fetch real quantum state data from API
             const response = await fetch('/api/quantum_state');
@@ -481,13 +509,13 @@ class HackathonDashboard {
                     modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
                 };
 
-                Plotly.newPlot(contentElement, plotData, layout, config);
+                Plotly.newPlot(container, plotData, layout, config);
             } else {
-                contentElement.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No quantum state data available</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No quantum state data available</p>';
             }
         } catch (error) {
-            console.error('Error fetching quantum state data:', error);
-            contentElement.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading quantum state data</p>';
+            console.error('Error creating fallback Bloch sphere:', error);
+            container.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading quantum state data</p>';
         }
     }
 
@@ -495,6 +523,25 @@ class HackathonDashboard {
         const contentElement = document.getElementById('circuit-content');
         if (!contentElement) return;
 
+        try {
+            // Initialize 3D quantum circuit if available
+            if (typeof init3DQuantumCircuit === 'function') {
+                console.log('🚀 Initializing 3D quantum circuit...');
+                init3DQuantumCircuit();
+                console.log('✅ 3D quantum circuit initialized');
+            } else {
+                // Fallback to 2D circuit visualization
+                console.log('🔄 Using 2D circuit visualization as fallback...');
+                await this.create2DCircuitFallback(contentElement);
+            }
+        } catch (error) {
+            console.error('Error initializing 3D circuit:', error);
+            // Final fallback
+            await this.create2DCircuitFallback(contentElement);
+        }
+    }
+
+    async create2DCircuitFallback(container) {
         try {
             const response = await fetch('/api/quantum_circuit');
             const data = await response.json();
@@ -538,13 +585,13 @@ class HackathonDashboard {
                     displaylogo: false
                 };
 
-                Plotly.newPlot(contentElement, plotData, layout, config);
+                Plotly.newPlot(container, plotData, layout, config);
             } else {
-                contentElement.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No circuit data available</p>';
+                container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No circuit data available</p>';
             }
         } catch (error) {
-            console.error('Error fetching circuit data:', error);
-            contentElement.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading circuit data</p>';
+            console.error('Error creating 2D circuit fallback:', error);
+            container.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading circuit data</p>';
         }
     }
 
@@ -663,6 +710,161 @@ class HackathonDashboard {
         } catch (error) {
             console.error('Error fetching entanglement data:', error);
             contentElement.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading entanglement data</p>';
+        }
+    }
+
+    async updateResultsWidget() {
+        const contentElement = document.getElementById('results-content');
+        if (!contentElement) return;
+
+        try {
+            const response = await fetch('/api/measurement_results');
+            const data = await response.json();
+            
+            if (data.success && data.results) {
+                const results = data.results;
+                
+                const resultsHtml = `
+                    <div style="padding: 1rem;">
+                        <h4 style="color: var(--text-accent); margin-bottom: 1rem;">Measurement Results</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+                            ${Object.entries(results).map(([key, value]) => `
+                                <div style="text-align: center; padding: 1rem; background: var(--glass-bg); border-radius: 8px; border: 1px solid var(--glass-border);">
+                                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--text-accent);">${value}</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">${key}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                contentElement.innerHTML = resultsHtml;
+            } else {
+                contentElement.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No measurement results available</p>';
+            }
+        } catch (error) {
+            console.error('Error fetching results data:', error);
+            contentElement.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading results data</p>';
+        }
+    }
+
+    async updateQuantumStateWidget() {
+        const contentElement = document.getElementById('quantum-state-content');
+        if (!contentElement) return;
+
+        try {
+            const response = await fetch('/api/quantum_state_data');
+            const data = await response.json();
+            
+            if (data.success && data.quantum_state) {
+                const state = data.quantum_state;
+                
+                const stateHtml = `
+                    <div style="padding: 1rem;">
+                        <h4 style="color: var(--text-accent); margin-bottom: 1rem;">Quantum State Information</h4>
+                        <div style="background: var(--glass-bg); border-radius: 8px; padding: 1rem; border: 1px solid var(--glass-border);">
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>State Vector:</strong> 
+                                <span style="font-family: var(--font-mono); color: var(--text-accent);">${state.state_vector || '|ψ⟩'}</span>
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Amplitude:</strong> 
+                                <span style="font-family: var(--font-mono); color: var(--text-accent);">${state.amplitude || 'α'}</span>
+                            </div>
+                            <div style="margin-bottom: 0.5rem;">
+                                <strong>Phase:</strong> 
+                                <span style="font-family: var(--font-mono); color: var(--text-accent);">${state.phase || 'φ'}</span>
+                            </div>
+                            <div>
+                                <strong>Fidelity:</strong> 
+                                <span style="font-family: var(--font-mono); color: var(--text-accent);">${state.fidelity || '0.95'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                contentElement.innerHTML = stateHtml;
+            } else {
+                contentElement.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No quantum state data available</p>';
+            }
+        } catch (error) {
+            console.error('Error fetching quantum state data:', error);
+            contentElement.innerHTML = '<p style="text-align: center; color: var(--danger-color);">Error loading quantum state data</p>';
+        }
+    }
+
+    async updateAIChatWidget() {
+        const contentElement = document.getElementById('ai-chat-content');
+        if (!contentElement) return;
+
+        // Initialize AI chat functionality
+        this.setupAIChat();
+    }
+
+    setupAIChat() {
+        const chatInput = document.getElementById('chat-input');
+        const sendButton = document.getElementById('send-message');
+        const chatMessages = document.getElementById('chat-messages');
+
+        if (!chatInput || !sendButton || !chatMessages) return;
+
+        const sendMessage = () => {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            this.addChatMessage(message, 'user');
+            chatInput.value = '';
+
+            // Simulate AI response
+            setTimeout(() => {
+                const response = this.generateAIResponse(message);
+                this.addChatMessage(response, 'ai');
+            }, 1000);
+        };
+
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    }
+
+    addChatMessage(message, sender) {
+        const chatMessages = document.getElementById('chat-messages');
+        if (!chatMessages) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const icon = sender === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                ${icon} ${message}
+            </div>
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    generateAIResponse(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        if (lowerQuery.includes('bloch') || lowerQuery.includes('sphere')) {
+            return "The Bloch sphere is a geometric representation of the pure state space of a two-level quantum mechanical system. It's a unit sphere where each point represents a unique quantum state. The north pole represents |0⟩, the south pole represents |1⟩, and points on the equator represent superposition states.";
+        } else if (lowerQuery.includes('circuit') || lowerQuery.includes('gate')) {
+            return "Quantum circuits are composed of quantum gates that manipulate qubits. Common gates include Hadamard (H), Pauli-X/Y/Z, CNOT, and rotation gates. These gates create entanglement and superposition, enabling quantum algorithms like Shor's and Grover's.";
+        } else if (lowerQuery.includes('entanglement')) {
+            return "Quantum entanglement is a phenomenon where particles become correlated in such a way that measuring one instantly affects the other, regardless of distance. This is fundamental to quantum computing and enables quantum teleportation and superdense coding.";
+        } else if (lowerQuery.includes('job') || lowerQuery.includes('backend')) {
+            return "Quantum jobs are computational tasks submitted to quantum backends. Each job contains a quantum circuit and parameters. Backends are quantum processors or simulators that execute these jobs. IBM Quantum provides access to real quantum hardware and simulators.";
+        } else if (lowerQuery.includes('quantum') || lowerQuery.includes('computing')) {
+            return "Quantum computing leverages quantum mechanical phenomena like superposition and entanglement to process information. Unlike classical bits, quantum bits (qubits) can exist in multiple states simultaneously, potentially solving certain problems exponentially faster than classical computers.";
+        } else {
+            return "I can help explain quantum computing concepts, analyze quantum states, interpret circuit diagrams, and provide insights about quantum algorithms. What specific aspect of quantum computing would you like to explore?";
         }
     }
 
@@ -830,21 +1032,15 @@ class HackathonDashboard {
                 contentId: 'jobs-content'
             },
             'bloch-sphere': {
-                title: '3D Bloch Sphere',
+                title: '3D Bloch Sphere (Blochy)',
                 icon: 'fas fa-globe',
                 contentId: 'bloch-content',
                 isVisualization: true
             },
             'circuit': {
-                title: 'Quantum Circuit',
-                icon: 'fas fa-project-diagram',
+                title: '3D Quantum Circuit',
+                icon: 'fas fa-cube',
                 contentId: 'circuit-content',
-                isVisualization: true
-            },
-            'performance': {
-                title: 'Performance',
-                icon: 'fas fa-chart-line',
-                contentId: 'performance-content',
                 isVisualization: true
             },
             'entanglement': {
@@ -852,6 +1048,28 @@ class HackathonDashboard {
                 icon: 'fas fa-link',
                 contentId: 'entanglement-content',
                 isVisualization: true
+            },
+            'results': {
+                title: 'Measurement Results',
+                icon: 'fas fa-chart-bar',
+                contentId: 'results-content'
+            },
+            'quantum-state': {
+                title: 'Quantum State',
+                icon: 'fas fa-atom',
+                contentId: 'quantum-state-content'
+            },
+            'performance': {
+                title: 'Performance',
+                icon: 'fas fa-chart-line',
+                contentId: 'performance-content',
+                isVisualization: true
+            },
+            'ai-chat': {
+                title: 'AI Assistant',
+                icon: 'fas fa-robot',
+                contentId: 'ai-chat-content',
+                isChat: true
             }
         };
 
@@ -859,6 +1077,35 @@ class HackathonDashboard {
         if (!template) return '';
 
         const contentClass = template.isVisualization ? 'visualization-container' : '';
+        const loadingText = template.isChat ? 'Initializing AI assistant...' : `Loading ${template.title.toLowerCase()}...`;
+        
+        let contentHtml = '';
+        if (template.isChat) {
+            contentHtml = `
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message ai-message">
+                            <div class="message-content">
+                                <i class="fas fa-robot"></i>
+                                Hello! I'm your quantum computing AI assistant. Ask me anything about quantum states, circuits, or quantum computing concepts!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Ask about quantum computing..." class="chat-input">
+                        <button id="send-message" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else if (template.isVisualization) {
+            if (widgetType === 'bloch-sphere') {
+                contentHtml = '<div id="bloch-3d-container" style="width: 100%; height: 300px; position: relative;"></div>';
+            } else if (widgetType === 'circuit') {
+                contentHtml = '<div id="3d-quantum-circuit" style="width: 100%; height: 300px; position: relative;"></div>';
+            }
+        }
         
         return `
             <div class="widget fade-in" data-widget="${widgetType}">
@@ -885,10 +1132,10 @@ class HackathonDashboard {
                 <div class="widget-content">
                     <div class="loading" id="${widgetType}-loading">
                         <div class="spinner"></div>
-                        <span>Loading ${template.title.toLowerCase()}...</span>
+                        <span>${loadingText}</span>
                     </div>
                     <div class="${contentClass}" id="${template.contentId}" style="display: none;">
-                        <!-- Content will be loaded here -->
+                        ${contentHtml}
                     </div>
                 </div>
             </div>
