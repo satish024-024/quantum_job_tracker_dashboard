@@ -1179,6 +1179,14 @@ def professional_dashboard():
         return redirect('/')
     return render_template('professional_dashboard.html')
 
+@app.route('/hackathon')
+def hackathon_dashboard():
+    """Render award-winning hackathon dashboard for Team Quantum Spark"""
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return redirect('/')
+    return render_template('hackathon_dashboard.html')
+
 @app.route('/api/backends')
 def get_backends():
     """API endpoint to get backend data"""
