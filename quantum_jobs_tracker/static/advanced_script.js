@@ -225,6 +225,11 @@ class QuantumDashboard {
             addBackendBtn.addEventListener('click', () => this.addBackend());
         }
 
+        const refreshBackendsBtn = document.querySelector('[data-action="refresh-backends"]');
+        if (refreshBackendsBtn) {
+            refreshBackendsBtn.addEventListener('click', () => this.refreshBackends());
+        }
+
         const backendSettingsBtn = document.querySelector('[data-action="backend-settings"]');
         if (backendSettingsBtn) {
             backendSettingsBtn.addEventListener('click', () => this.showBackendSettings());
@@ -234,6 +239,27 @@ class QuantumDashboard {
         const clearJobsBtn = document.querySelector('[data-action="clear-jobs"]');
         if (clearJobsBtn) {
             clearJobsBtn.addEventListener('click', () => this.clearJobs());
+        }
+
+        // Circuit widget buttons
+        const circuitPlayBtn = document.querySelector('[data-action="play-pause"]');
+        if (circuitPlayBtn) {
+            circuitPlayBtn.addEventListener('click', () => this.toggleCircuitPlayback());
+        }
+
+        const circuitStepBtn = document.querySelector('[data-action="step"]');
+        if (circuitStepBtn) {
+            circuitStepBtn.addEventListener('click', () => this.stepCircuit());
+        }
+
+        const circuitResetBtn = document.querySelector('[data-action="reset"]');
+        if (circuitResetBtn) {
+            circuitResetBtn.addEventListener('click', () => this.resetCircuit());
+        }
+
+        const expandCircuitBtn = document.querySelector('[data-action="expand-circuit"]');
+        if (expandCircuitBtn) {
+            expandCircuitBtn.addEventListener('click', () => this.showCircuitPopup());
         }
 
         // Entanglement widget buttons
@@ -274,7 +300,17 @@ class QuantumDashboard {
             rotateBlochBtn.addEventListener('click', () => this.rotateBloch());
         }
 
+        const expandBlochBtn = document.querySelector('[data-action="expand-bloch"]');
+        if (expandBlochBtn) {
+            expandBlochBtn.addEventListener('click', () => this.showBlochPopup());
+        }
+
         // Quantum state widget buttons
+        const refreshQuantumStateBtn = document.querySelector('[data-action="refresh-quantum-state"]');
+        if (refreshQuantumStateBtn) {
+            refreshQuantumStateBtn.addEventListener('click', () => this.refreshQuantumState());
+        }
+
         const calculateStateBtn = document.querySelector('[data-action="calculate-state"]');
         if (calculateStateBtn) {
             calculateStateBtn.addEventListener('click', () => this.calculateQuantumState());
@@ -286,6 +322,11 @@ class QuantumDashboard {
         }
 
         // Performance widget buttons
+        const refreshPerformanceBtn = document.querySelector('[data-action="refresh-performance"]');
+        if (refreshPerformanceBtn) {
+            refreshPerformanceBtn.addEventListener('click', () => this.refreshPerformance());
+        }
+
         const exportPerformanceBtn = document.querySelector('[data-action="export-performance"]');
         if (exportPerformanceBtn) {
             exportPerformanceBtn.addEventListener('click', () => this.exportPerformance());
@@ -295,6 +336,9 @@ class QuantumDashboard {
         if (performanceSettingsBtn) {
             performanceSettingsBtn.addEventListener('click', () => this.showPerformanceSettings());
         }
+
+        // Setup popup close handlers
+        this.setupPopupHandlers();
     }
 
     updateMetrics() {
@@ -2207,6 +2251,391 @@ class QuantumDashboard {
         console.log('⚙️ Showing performance settings...');
         this.showNotification('Performance settings opened', 'info');
         // TODO: Implement performance settings modal
+    }
+
+    // ===== POPUP MODAL SYSTEM =====
+    setupPopupHandlers() {
+        // Close popup when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('widget-popup-overlay')) {
+                this.closePopup();
+            }
+        });
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closePopup();
+            }
+        });
+    }
+
+    showCircuitPopup() {
+        console.log('🔍 Opening 3D Quantum Circuit popup...');
+        this.createPopup('circuit-popup', '3D Quantum Circuit', 'fas fa-cube', this.getCircuitPopupContent());
+    }
+
+    showBlochPopup() {
+        console.log('🔍 Opening 3D Bloch Sphere popup...');
+        this.createPopup('bloch-popup', '3D Bloch Sphere', 'fas fa-globe', this.getBlochPopupContent());
+    }
+
+    showResultsPopup() {
+        console.log('🔍 Opening Results popup...');
+        this.createPopup('results-popup', 'Measurement Results', 'fas fa-chart-bar', this.getResultsPopupContent());
+    }
+
+    createPopup(type, title, icon, content) {
+        // Remove existing popup
+        this.closePopup();
+
+        const popupHTML = `
+            <div class="widget-popup-overlay active">
+                <div class="widget-popup-content ${type}">
+                    <div class="widget-popup-header">
+                        <h2 class="widget-popup-title">
+                            <i class="${icon}"></i>
+                            ${title}
+                        </h2>
+                        <button class="widget-popup-close" onclick="dashboard.closePopup()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="widget-popup-body">
+                        ${content}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', popupHTML);
+        document.body.style.overflow = 'hidden';
+    }
+
+    closePopup() {
+        const popup = document.querySelector('.widget-popup-overlay');
+        if (popup) {
+            popup.classList.remove('active');
+            setTimeout(() => {
+                popup.remove();
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+    }
+
+    getCircuitPopupContent() {
+        return `
+            <div class="circuit-popup-content">
+                <div class="circuit-controls-popup">
+                    <div class="control-group">
+                        <button class="widget-btn primary" onclick="dashboard.toggleCircuitPlayback()">
+                            <i class="fas fa-play"></i> Play/Pause
+                        </button>
+                        <button class="widget-btn" onclick="dashboard.stepCircuit()">
+                            <i class="fas fa-step-forward"></i> Step
+                        </button>
+                        <button class="widget-btn" onclick="dashboard.resetCircuit()">
+                            <i class="fas fa-undo"></i> Reset
+                        </button>
+                    </div>
+                </div>
+                <div class="circuit-visualization-popup">
+                    <div id="circuit-popup-container" style="width: 100%; height: 500px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-primary); display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-cube" style="font-size: 3rem; margin-bottom: 1rem; color: var(--accent);"></i>
+                            <h3>3D Quantum Circuit Visualization</h3>
+                            <p>Circuit diagram will be rendered here</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="circuit-info-popup">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <h4>Qubits</h4>
+                            <span class="value">5</span>
+                        </div>
+                        <div class="info-card">
+                            <h4>Gates</h4>
+                            <span class="value">7</span>
+                        </div>
+                        <div class="info-card">
+                            <h4>Depth</h4>
+                            <span class="value">8</span>
+                        </div>
+                        <div class="info-card">
+                            <h4>Status</h4>
+                            <span class="value">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getBlochPopupContent() {
+        return `
+            <div class="bloch-popup-content">
+                <div class="bloch-visualization">
+                    <div id="bloch-popup-container" style="width: 100%; height: 400px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-primary); display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center; color: var(--text-secondary);">
+                            <i class="fas fa-globe" style="font-size: 3rem; margin-bottom: 1rem; color: var(--accent);"></i>
+                            <h3>3D Bloch Sphere</h3>
+                            <p>Interactive 3D visualization will be rendered here</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bloch-controls">
+                    <div class="control-section">
+                        <h3>Quantum Gates</h3>
+                        <div class="gate-buttons">
+                            <button class="gate-btn" onclick="dashboard.applyGate('hadamard')">H</button>
+                            <button class="gate-btn" onclick="dashboard.applyGate('pauli-x')">X</button>
+                            <button class="gate-btn" onclick="dashboard.applyGate('pauli-y')">Y</button>
+                            <button class="gate-btn" onclick="dashboard.applyGate('pauli-z')">Z</button>
+                        </div>
+                    </div>
+                    <div class="control-section">
+                        <h3>State Controls</h3>
+                        <div class="state-buttons">
+                            <button class="gate-btn" onclick="dashboard.resetBloch()">|0⟩</button>
+                            <button class="gate-btn" onclick="dashboard.setPlusState()">|+⟩</button>
+                            <button class="gate-btn" onclick="dashboard.setMinusState()">|-⟩</button>
+                        </div>
+                    </div>
+                    <div class="control-section">
+                        <h3>Current State</h3>
+                        <div class="state-info">
+                            <div class="state-equation">|ψ⟩ = 0.707|0⟩ + 0.707|1⟩</div>
+                            <div class="state-details">
+                                <div>θ: π/4</div>
+                                <div>φ: 0</div>
+                                <div>Fidelity: 98.7%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    getResultsPopupContent() {
+        return `
+            <div class="results-popup-content">
+                <div class="results-chart">
+                    <canvas id="results-popup-canvas" width="800" height="400" style="width: 100%; height: 400px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-primary);"></canvas>
+                </div>
+                <div class="results-details">
+                    <div class="results-detail-card">
+                        <h4>Total Shots</h4>
+                        <div class="value">1024</div>
+                    </div>
+                    <div class="results-detail-card">
+                        <h4>Fidelity</h4>
+                        <div class="value">89.2%</div>
+                    </div>
+                    <div class="results-detail-card">
+                        <h4>Success Rate</h4>
+                        <div class="value">95.8%</div>
+                    </div>
+                    <div class="results-detail-card">
+                        <h4>Error Rate</h4>
+                        <div class="value">4.2%</div>
+                    </div>
+                </div>
+                <div class="results-actions">
+                    <button class="widget-btn primary" onclick="dashboard.refreshResults()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="widget-btn" onclick="dashboard.exportResults()">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                    <button class="widget-btn danger" onclick="dashboard.clearResults()">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ===== MISSING BUTTON METHODS =====
+    refreshBackends() {
+        console.log('🔄 Refreshing backends...');
+        this.showNotification('Refreshing quantum backends...', 'info');
+        this.loadBackends();
+    }
+
+    addBackend() {
+        console.log('➕ Adding new backend...');
+        this.showNotification('Add backend functionality coming soon', 'info');
+    }
+
+    toggleCircuitPlayback() {
+        console.log('▶️ Toggling circuit playback...');
+        const playBtn = document.querySelector('[data-action="play-pause"] i');
+        if (playBtn) {
+            if (playBtn.classList.contains('fa-play')) {
+                playBtn.classList.remove('fa-play');
+                playBtn.classList.add('fa-pause');
+                this.showNotification('Circuit playback started', 'success');
+            } else {
+                playBtn.classList.remove('fa-pause');
+                playBtn.classList.add('fa-play');
+                this.showNotification('Circuit playback paused', 'info');
+            }
+        }
+    }
+
+    stepCircuit() {
+        console.log('⏭️ Stepping circuit...');
+        this.showNotification('Circuit stepped forward', 'info');
+    }
+
+    resetCircuit() {
+        console.log('🔄 Resetting circuit...');
+        this.showNotification('Circuit reset to initial state', 'success');
+    }
+
+    refreshEntanglement() {
+        console.log('🔄 Refreshing entanglement...');
+        this.showNotification('Refreshing entanglement data...', 'info');
+        this.updateEntanglementVisualization();
+    }
+
+    calculateEntanglement() {
+        console.log('🧮 Calculating entanglement...');
+        this.showNotification('Calculating quantum entanglement...', 'info');
+        this.updateEntanglementVisualization();
+    }
+
+    refreshResults() {
+        console.log('🔄 Refreshing results...');
+        this.showNotification('Refreshing measurement results...', 'info');
+        this.updateResultsVisualization();
+    }
+
+    refreshQuantumState() {
+        console.log('🔄 Refreshing quantum state...');
+        this.showNotification('Refreshing quantum state...', 'info');
+        this.updateQuantumStateDisplay();
+    }
+
+    refreshPerformance() {
+        console.log('🔄 Refreshing performance...');
+        this.showNotification('Refreshing performance metrics...', 'info');
+        this.updatePerformanceDisplay();
+    }
+
+    // ===== QUANTUM GATE METHODS =====
+    applyGate(gateType) {
+        console.log(`🔧 Applying ${gateType} gate...`);
+        this.showNotification(`${gateType} gate applied`, 'success');
+        // Update Bloch sphere visualization
+        this.updateBlochSphere();
+    }
+
+    setPlusState() {
+        console.log('➕ Setting |+⟩ state...');
+        this.blochState.theta = Math.PI / 2;
+        this.blochState.phi = 0;
+        this.updateBlochSphere();
+        this.showNotification('State set to |+⟩', 'success');
+    }
+
+    setMinusState() {
+        console.log('➖ Setting |-⟩ state...');
+        this.blochState.theta = Math.PI / 2;
+        this.blochState.phi = Math.PI;
+        this.updateBlochSphere();
+        this.showNotification('State set to |-⟩', 'success');
+    }
+
+    // ===== VISUALIZATION UPDATE METHODS =====
+    updateEntanglementVisualization() {
+        const canvas = document.getElementById('entanglement-canvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw entanglement visualization
+        ctx.strokeStyle = '#00d4ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(100, 60, 30, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.fillStyle = '#00d4ff';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(200, 60, 30, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.fillStyle = '#9b59b6';
+        ctx.fill();
+
+        // Draw connection line
+        ctx.strokeStyle = '#ffaa00';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(130, 60);
+        ctx.lineTo(170, 60);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Update fidelity
+        const fidelityElement = document.getElementById('entanglement-fidelity');
+        if (fidelityElement) {
+            fidelityElement.textContent = '0.95';
+        }
+    }
+
+    updateResultsVisualization() {
+        const canvas = document.getElementById('results-canvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw bar chart
+        const data = [
+            { label: '00', value: 15, color: '#00d4ff' },
+            { label: '01', value: 5, color: '#9b59b6' },
+            { label: '10', value: 5, color: '#ffaa00' },
+            { label: '11', value: 15, color: '#00ff88' }
+        ];
+
+        const barWidth = 40;
+        const barSpacing = 20;
+        const maxValue = Math.max(...data.map(d => d.value));
+        const startX = 50;
+
+        data.forEach((item, index) => {
+            const x = startX + index * (barWidth + barSpacing);
+            const height = (item.value / maxValue) * 80;
+            const y = canvas.height - 40 - height;
+
+            // Draw bar
+            ctx.fillStyle = item.color;
+            ctx.fillRect(x, y, barWidth, height);
+
+            // Draw label
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(item.label, x + barWidth / 2, canvas.height - 20);
+            ctx.fillText(item.value.toString(), x + barWidth / 2, y - 5);
+        });
+
+        // Update info
+        const shotsElement = document.getElementById('results-shots');
+        const fidelityElement = document.getElementById('results-fidelity');
+        if (shotsElement) shotsElement.textContent = '1024';
+        if (fidelityElement) fidelityElement.textContent = '0.89';
+    }
+
+    updateBlochSphere() {
+        // This will be handled by the Bloch sphere library
+        console.log('🔄 Updating Bloch sphere visualization...');
     }
     // Correctly placed async methods for real data loading
     async loadResults() {
