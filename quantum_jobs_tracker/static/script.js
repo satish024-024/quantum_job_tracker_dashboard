@@ -2,7 +2,6 @@
 
 // Configuration
 const CONFIG = {
-    updateInterval: 30000, // Update data every 30 seconds
     maxQubits: 5,          // Maximum number of qubits to visualize
     colors: {
         primary: '#3498db',
@@ -25,10 +24,10 @@ const state = {
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', () => {
     initializeDashboard();
-    fetchData();
+    fetchData(); // Load data once on initialization
     
-    // Set up periodic updates
-    setInterval(fetchData, CONFIG.updateInterval);
+    // Set up manual refresh buttons instead of automatic polling
+    setupManualRefresh();
 });
 
 // Initialize quantum visualization canvas
@@ -475,4 +474,123 @@ function drawMeasurement(ctx, x, y) {
     ctx.lineTo(x, y + size);
     ctx.stroke();
     ctx.setLineDash([]);
+}
+
+// Setup manual refresh functionality
+function setupManualRefresh() {
+    // Add refresh functionality to all refresh buttons
+    document.querySelectorAll('[data-action*="refresh"]').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const action = button.getAttribute('data-action');
+            handleRefreshAction(action);
+        });
+    });
+    
+    // Add global refresh button if it exists
+    const globalRefreshBtn = document.getElementById('global-refresh');
+    if (globalRefreshBtn) {
+        globalRefreshBtn.addEventListener('click', () => {
+            fetchData();
+        });
+    }
+}
+
+// Handle refresh actions
+function handleRefreshAction(action) {
+    switch (action) {
+        case 'refresh-backends':
+            fetchBackends();
+            break;
+        case 'refresh-jobs':
+            fetchJobs();
+            break;
+        case 'refresh-results':
+            fetchResults();
+            break;
+        case 'refresh-entanglement':
+            fetchEntanglement();
+            break;
+        case 'refresh-quantum-state':
+            fetchQuantumState();
+            break;
+        case 'refresh-performance':
+            fetchPerformance();
+            break;
+        default:
+            fetchData(); // Full refresh
+    }
+}
+
+// Individual fetch functions for specific data
+async function fetchBackends() {
+    try {
+        const response = await fetch('/api/backends');
+        const data = await response.json();
+        if (data.success) {
+            updateBackendsUI(data.backends);
+        }
+    } catch (error) {
+        console.error('Error fetching backends:', error);
+    }
+}
+
+async function fetchJobs() {
+    try {
+        const response = await fetch('/api/jobs');
+        const data = await response.json();
+        if (data.success) {
+            updateJobsUI(data.jobs);
+        }
+    } catch (error) {
+        console.error('Error fetching jobs:', error);
+    }
+}
+
+async function fetchResults() {
+    try {
+        const response = await fetch('/api/results');
+        const data = await response.json();
+        if (data.success) {
+            updateResultsUI(data.results);
+        }
+    } catch (error) {
+        console.error('Error fetching results:', error);
+    }
+}
+
+async function fetchEntanglement() {
+    try {
+        const response = await fetch('/api/entanglement');
+        const data = await response.json();
+        if (data.success) {
+            updateEntanglementUI(data);
+        }
+    } catch (error) {
+        console.error('Error fetching entanglement:', error);
+    }
+}
+
+async function fetchQuantumState() {
+    try {
+        const response = await fetch('/api/quantum_state');
+        const data = await response.json();
+        if (data.success) {
+            updateQuantumStateUI(data);
+        }
+    } catch (error) {
+        console.error('Error fetching quantum state:', error);
+    }
+}
+
+async function fetchPerformance() {
+    try {
+        const response = await fetch('/api/performance');
+        const data = await response.json();
+        if (data.success) {
+            updatePerformanceUI(data);
+        }
+    } catch (error) {
+        console.error('Error fetching performance:', error);
+    }
 }

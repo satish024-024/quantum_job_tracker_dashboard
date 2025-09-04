@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, redirect, Response
 import numpy as np
 import time
 import json
@@ -1149,11 +1149,11 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-    """Render dashboard if token is set"""
+    """Render professional dashboard if token is set"""
     session_id = request.remote_addr
     if session_id not in user_tokens:
         return redirect('/')
-    return render_template('advanced_dashboard.html')
+    return render_template('professional_dashboard.html')
 
 @app.route('/advanced')
 def advanced_dashboard():
@@ -1170,6 +1170,22 @@ def modern_dashboard():
     if session_id not in user_tokens:
         return redirect('/')
     return render_template('modern_dashboard.html')
+
+@app.route('/professional')
+def professional_dashboard():
+    """Render professional dashboard with widget customization"""
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return redirect('/')
+    return render_template('professional_dashboard.html')
+
+@app.route('/hackathon')
+def hackathon_dashboard():
+    """Render award-winning hackathon dashboard for Team Quantum Spark"""
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return redirect('/')
+    return render_template('hackathon_dashboard.html')
 
 @app.route('/api/backends')
 def get_backends():
@@ -1636,6 +1652,50 @@ def get_dashboard_state():
             "using_real_quantum": False,
             "real_data": False
         }), 500
+
+@app.route('/api/notifications')
+def notifications():
+    """Server-Sent Events endpoint for real-time notifications"""
+    session_id = request.remote_addr
+    if session_id not in user_tokens:
+        return Response("Unauthorized", status=401)
+    
+    def generate_notifications():
+        """Generate notifications for job updates"""
+        last_job_count = 0
+        last_job_states = {}
+        
+        while True:
+            try:
+                # Get current job data
+                if hasattr(app, 'quantum_manager') and app.quantum_manager and app.quantum_manager.is_connected:
+                    jobs = app.quantum_manager.job_data
+                    
+                    # Check for new jobs
+                    if len(jobs) > last_job_count:
+                        new_jobs = jobs[last_job_count:]
+                        for job in new_jobs:
+                            yield f"data: {json.dumps({'type': 'new_job', 'job_id': job.get('job_id', 'unknown'), 'status': job.get('status', 'unknown')})}\n\n"
+                        last_job_count = len(jobs)
+                    
+                    # Check for job status changes
+                    for job in jobs:
+                        job_id = job.get('job_id', 'unknown')
+                        current_status = job.get('status', 'unknown')
+                        last_status = last_job_states.get(job_id)
+                        
+                        if last_status and last_status != current_status:
+                            yield f"data: {json.dumps({'type': 'job_update', 'job_id': job_id, 'old_status': last_status, 'new_status': current_status})}\n\n"
+                        
+                        last_job_states[job_id] = current_status
+                
+                time.sleep(5)  # Check every 5 seconds
+                
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
+                time.sleep(10)  # Wait longer on error
+    
+    return Response(generate_notifications(), mimetype='text/event-stream')
 
         # If connection error, return 503 with message
         return jsonify({

@@ -19,7 +19,6 @@ class QuantumDashboard {
         this.circuitCtx = null;
         this.animationId = null;
         this.circuitAnimationId = null;
-        this.updateInterval = null;
 
         // Initialize with more realistic quantum states
         this.quantumStates = this.generateRealisticQuantumStates();
@@ -28,7 +27,7 @@ class QuantumDashboard {
 
         this.init();
         
-        // Fetch real data immediately
+        // Fetch real data once on initialization
         setTimeout(() => {
             this.updateAllWidgets();
             this.updateQuantumMetrics();
