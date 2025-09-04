@@ -687,6 +687,7 @@
 
     <!-- Bloch Sphere JavaScript Files - Load in correct dependency order -->
     <script src="static/plotly-gl3d-2.16.1.min.js"></script>
+    <script src="static/enhanced_3d_circuit.js"></script>
     <script src="static/3d_quantum_circuit.js"></script>
     <script src="static/bloch_quantum.js"></script>
     <script src="static/bloch_plot.js"></script>
@@ -731,16 +732,23 @@
                 return;
             }
             
-            // Initialize 3D Quantum Circuit
-            if (typeof init3DQuantumCircuit === 'function') {
-                console.log('🚀 Initializing 3D Quantum Circuit...');
+            // Initialize Enhanced 3D Quantum Circuit
+            if (typeof initEnhanced3DQuantumCircuit === 'function') {
+                console.log('🚀 Initializing Enhanced 3D Quantum Circuit...');
+                try {
+                    initEnhanced3DQuantumCircuit();
+                } catch (error) {
+                    console.error('❌ Error initializing Enhanced 3D Quantum Circuit:', error);
+                }
+            } else if (typeof init3DQuantumCircuit === 'function') {
+                console.log('🚀 Initializing 3D Quantum Circuit (fallback)...');
                 try {
                     init3DQuantumCircuit();
                 } catch (error) {
                     console.error('❌ Error initializing 3D Quantum Circuit:', error);
                 }
             } else {
-                console.warn('⚠️ init3DQuantumCircuit function not available');
+                console.warn('⚠️ No 3D Quantum Circuit initialization function available');
             }
             
             // Initialize Bloch sphere
