@@ -259,7 +259,13 @@ class QuantumDashboard {
 
         const expandCircuitBtn = document.querySelector('[data-action="expand-circuit"]');
         if (expandCircuitBtn) {
-            expandCircuitBtn.addEventListener('click', () => this.showCircuitPopup());
+            expandCircuitBtn.addEventListener('click', () => {
+                if (typeof createFullscreenCircuit === 'function') {
+                    createFullscreenCircuit();
+                } else {
+                    this.showCircuitPopup();
+                }
+            });
         }
 
         // Entanglement widget buttons
