@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="static/advanced_style.css">
+    <link rel="stylesheet" href="static/enhanced_quantum_style.css">
     <link rel="stylesheet" href="static/3d_circuit_style.css">
 </head>
 <body class="light-theme">
@@ -36,6 +36,16 @@
             <div class="connection-status" id="connection-status">
                 <i class="fas fa-circle status-indicator"></i>
                 <span>Connected to IBM Quantum</span>
+            </div>
+            <div class="hackathon-info">
+                <div class="hackathon-badge">
+                    <i class="fas fa-trophy"></i>
+                    <span>Amravati Quantum Hackathon</span>
+                </div>
+                <div class="team-info">
+                    <span class="team-name">Quantum Spark</span>
+                    <span class="designer-name">by Satish Kumar</span>
+                </div>
             </div>
         </div>
         
@@ -693,8 +703,20 @@
     <script src="static/bloch_plot.js"></script>
     <script src="static/bloch_ui.js"></script>
     
-    <!-- Main dashboard script - loaded last -->
-    <script src="static/advanced_script.js"></script>
+    <!-- Enhanced dashboard script - loaded last -->
+    <script src="static/enhanced_quantum_script.js"></script>
+    
+    <!-- Enhanced Bloch Sphere Integration -->
+    <script src="static/enhanced_bloch_integration.js"></script>
+    
+    <!-- Enhanced Notification System -->
+    <script src="static/enhanced_notifications.js"></script>
+    
+    <!-- AI Integration with Google Gemini -->
+    <script src="static/ai_integration.js"></script>
+    
+    <!-- Backend Comparison System -->
+    <script src="static/backend_comparison.js"></script>
     
     <script>
         // Add keyboard shortcut for fullscreen toggle (ESC key)
@@ -708,27 +730,27 @@
         });
     </script>
     
-    <!-- Initialize Dashboard and Loading System -->
+    <!-- Initialize Enhanced Dashboard and Loading System -->
     <script>
-        // Initialize dashboard instance
+        // Initialize enhanced dashboard instance
         let dashboard;
         
         // Wait for all scripts to load
         window.addEventListener('load', function() {
-            console.log('🚀 Window loaded, initializing dashboard...');
+            console.log('🚀 Window loaded, initializing enhanced dashboard...');
             
-            // Check if QuantumDashboard class is available
-            if (typeof QuantumDashboard === 'undefined') {
-                console.error('❌ QuantumDashboard class not available');
+            // Check if EnhancedQuantumDashboard class is available
+            if (typeof EnhancedQuantumDashboard === 'undefined') {
+                console.error('❌ EnhancedQuantumDashboard class not available');
                 return;
             }
             
-            // Initialize the main dashboard
+            // Initialize the enhanced dashboard
             try {
-                dashboard = new QuantumDashboard();
-                console.log('✅ Dashboard initialized successfully');
+                dashboard = new EnhancedQuantumDashboard();
+                console.log('✅ Enhanced Dashboard initialized successfully');
             } catch (error) {
-                console.error('❌ Error initializing dashboard:', error);
+                console.error('❌ Error initializing enhanced dashboard:', error);
                 return;
             }
             
