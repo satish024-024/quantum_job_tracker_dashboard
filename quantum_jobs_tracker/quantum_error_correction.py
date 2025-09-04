@@ -6,18 +6,36 @@ Implements basic quantum error correction codes and error mitigation techniques.
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.quantum_info import Statevector, DensityMatrix, state_fidelity
-from qiskit.providers.aer import Aer
-from qiskit.providers.aer.noise import NoiseModel
-from qiskit.providers.aer.noise.errors import depolarizing_error
-
-# Optional Ignis support for measurement error mitigation
+# Updated imports for newer qiskit versions
 try:
-    from qiskit.ignis.mitigation import CompleteMeasFitter, MeasurementFilter
-    _HAS_IGNIS = True
+    from qiskit_aer import Aer  # type: ignore
+    from qiskit_aer.noise import NoiseModel, depolarizing_error  # type: ignore
+    _HAS_AER = True
 except ImportError:
-    _HAS_IGNIS = False
-    logger = None
-else:
+    try:
+        from qiskit.providers.aer import Aer  # type: ignore
+        from qiskit.providers.aer.noise import NoiseModel, depolarizing_error  # type: ignore
+        _HAS_AER = True
+    except ImportError:
+        _HAS_AER = False
+        Aer = None
+        NoiseModel = None
+        depolarizing_error = None
+
+# Optional measurement error mitigation support
+try:
+    from qiskit_experiments.library import CompleteMeasFitter, MeasurementFilter  # type: ignore
+    _HAS_MITIGATION = True
+except ImportError:
+    try:
+        from qiskit.ignis.mitigation import CompleteMeasFitter, MeasurementFilter  # type: ignore
+        _HAS_MITIGATION = True
+    except ImportError:
+        _HAS_MITIGATION = False
+        CompleteMeasFitter = None
+        MeasurementFilter = None
+
+if _HAS_AER:
     import logging
     # Configure logging only if not already configured
     if not logging.getLogger().handlers:
@@ -36,12 +54,12 @@ class QuantumErrorCorrection:
     
     def __init__(self):
         # Initialize Aer backend for error correction simulations
-        try:
-            from qiskit.providers.aer import Aer
+        if _HAS_AER and Aer is not None:
             self.simulator = Aer.get_backend('aer_simulator')
             self.backend_options = {"method": "statevector"}
-        except ImportError:
-            logger.warning("Aer backend not available, using theoretical calculations only")
+        else:
+            if logger:
+                logger.warning("Aer backend not available, using theoretical calculations only")
             self.simulator = None
             self.backend_options = {"method": "statevector"}
         
@@ -154,7 +172,7 @@ class QuantumErrorCorrection:
     def _create_measurement_filter(self, circuit, result=None):
         """Create a measurement filter for error mitigation that matches circuit bit-width."""
         try:
-            if not _HAS_IGNIS:
+            if not _HAS_MITIGATION:
                 logger.warning("Ignis not available, using theoretical mitigation")
                 return None
                 
@@ -258,6 +276,11 @@ class QuantumErrorCorrection:
     
     def _create_noise_model(self, error_probability):
         """Create a modern noise model for simulation with 1 and 2-qubit errors."""
+        if not _HAS_AER or NoiseModel is None or depolarizing_error is None:
+            if logger:
+                logger.warning("Noise model creation not available - Aer backend not installed")
+            return None
+            
         try:
             # Create noise model
             noise_model = NoiseModel()
@@ -276,7 +299,8 @@ class QuantumErrorCorrection:
             
             return noise_model
         except Exception as e:
-            logger.error(f"Error creating noise model: {e}")
+            if logger:
+                logger.error(f"Error creating noise model: {e}")
             return None
     
     def _is_logical_error(self, bitstring):
