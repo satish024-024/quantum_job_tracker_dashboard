@@ -96,18 +96,26 @@ function rot_phosphor(axis_op, angle, state, divider=10) {
         hoverinfo: 'skip', 
         mode: 'lines',
         opacity: 1.0,
-        line: {color: document.getElementById('phosphor_color').value, width:3},
+        line: {color: (document.getElementById('phosphor_color') ? document.getElementById('phosphor_color').value : '#00ff00'), width:3},
     }
     PHOSPHOR.push(hist);
 }
 
 function rabi_plot(data=null) {
-    time = document.getElementById('pulselength').value;
+    // Get input values with fallback for dashboard integration
+    const pulseLengthElement = document.getElementById('pulselength');
+    const detuningElement = document.getElementById('detuning');
+    const amplitudeElement = document.getElementById('amplitude');
+
+    time = pulseLengthElement ? parseFloat(pulseLengthElement.value) : 1.0;
+    const detuning = detuningElement ? parseFloat(detuningElement.value) : 0.0;
+    const amplitude = amplitudeElement ? parseFloat(amplitudeElement.value) : 1.0;
+
    if (data === null) {
     t_stop = Math.max(2,time);
     tax = linspace(0,t_stop,101);
-    detune = 2*math.PI*document.getElementById('detuning').value;
-    w1 = 2*math.PI*document.getElementById('amplitude').value;
+    detune = 2*math.PI*detuning;
+    w1 = 2*math.PI*amplitude;
     Omega = math.sqrt(detune*detune+w1*w1);
     arg_ax = math.dotMultiply(tax,Omega/2);
     y = math.map(arg_ax,math.sin);
@@ -172,9 +180,18 @@ function rabi_plot(data=null) {
     
   function pulse(axis, time, state) {
     opZ = math.matrix([[math.complex(0.5,0),0],[0,math.complex(-0.5,0)]]);
-    detune = 2*math.PI*document.getElementById('detuning').value;
-    w1 = 2*math.PI*document.getElementById('amplitude').value;
-    phase = math.PI/180*document.getElementById('phase').value;
+
+    // Get input values with fallback for dashboard integration
+    const detuningElement = document.getElementById('detuning');
+    const amplitudeElement = document.getElementById('amplitude');
+    const phaseElement = document.getElementById('phase');
+
+    const detuning = detuningElement ? parseFloat(detuningElement.value) : 0.0;
+    const amplitude = amplitudeElement ? parseFloat(amplitudeElement.value) : 1.0;
+    const phase = phaseElement ? math.PI/180 * parseFloat(phaseElement.value) : 0.0;
+
+    detune = 2*math.PI*detuning;
+    w1 = 2*math.PI*amplitude;
     H0 = math.multiply(opZ,detune);
     if (axis === "x") {
       //opX = math.matrix([[0,0.5*math.exp(math.complex(0,phase+math.PI/2))],[0.5*math.exp(math.complex(0,-phase-math.PI/2)),0]]); 
@@ -214,7 +231,7 @@ function rabi_plot(data=null) {
         hoverinfo: 'skip', 
         mode: 'lines',
         opacity: 1.0,
-        line: {color: document.getElementById('phosphor_color').value, width:3},
+        line: {color: (document.getElementById('phosphor_color') ? document.getElementById('phosphor_color').value : '#00ff00'), width:3},
     }
     PHOSPHOR.push(hist);
   }

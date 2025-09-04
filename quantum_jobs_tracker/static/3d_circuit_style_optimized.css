@@ -1,0 +1,553 @@
+/* Optimized 3D Quantum Circuit Styles - Performance Focused */
+
+/* Base container with reduced complexity */
+.circuit-3d-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Simplified background effects */
+.circuit-3d-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(77, 171, 247, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Circuit view optimization */
+.circuit-3d-view {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Simplified info panel */
+.circuit-info-panel {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.circuit-info-panel .info-section {
+    padding: 0;
+    margin: 0;
+}
+
+.circuit-info-panel .info-item {
+    font-size: 12px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.circuit-info-panel .info-item span:first-child {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.circuit-info-panel .info-item span:last-child {
+    color: #4dabf7;
+    font-weight: 600;
+}
+
+/* Performance indicator styling */
+#performance-indicator {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(81, 207, 102, 0.2);
+    border: 1px solid rgba(81, 207, 102, 0.3);
+}
+
+/* Dashboard mode optimizations */
+.dashboard-circuit-container {
+    height: 400px;
+    min-height: 400px;
+    max-height: 500px;
+}
+
+.dashboard-circuit-container .circuit-3d-container {
+    height: 100%;
+    padding: 12px;
+}
+
+.dashboard-circuit-container .circuit-3d-view {
+    height: 300px;
+    min-height: 300px;
+    flex: none;
+}
+
+/* ===== OPTIMIZED FULLSCREEN STYLES ===== */
+
+/* Lightweight fullscreen overlay */
+.fullscreen-circuit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.fullscreen-circuit-content {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Simplified header */
+.fullscreen-circuit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.fullscreen-circuit-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.fullscreen-circuit-title i {
+    font-size: 20px;
+    color: #4dabf7;
+}
+
+.fullscreen-circuit-title h1 {
+    color: #fff;
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.fullscreen-circuit-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.close-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.close-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+/* Optimized body layout */
+.fullscreen-circuit-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    gap: 15px;
+    padding: 15px;
+    overflow: hidden;
+}
+
+/* Left Panel: Circuit Controls */
+.circuit-controls-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.control-section {
+    margin-bottom: 20px;
+}
+
+.control-section h4 {
+    color: #fff;
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.control-section h4 i {
+    color: #4dabf7;
+    font-size: 12px;
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.control-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.control-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.control-btn.active {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.setting-group {
+    margin-bottom: 12px;
+}
+
+.setting-group label {
+    display: block;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.setting-group input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    padding: 8px;
+    color: #fff;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.setting-group input:focus {
+    outline: none;
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.3);
+}
+
+.info-display {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Center Panel: Circuit Visualization */
+.circuit-visualization-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+}
+
+.circuit-3d-container-fullscreen {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.circuit-3d-view-fullscreen {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+}
+
+/* Right Panel: Gate Palette */
+.gate-palette-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.gate-category {
+    margin-bottom: 15px;
+}
+
+.gate-category h5 {
+    color: #fff;
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+.gate-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+}
+
+.gate-btn {
+    background: linear-gradient(135deg, #4dabf7 0%, #339af0 100%);
+    border: none;
+    color: white;
+    padding: 10px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(77, 171, 247, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-height: 60px;
+    justify-content: center;
+    position: relative;
+}
+
+.gate-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(77, 171, 247, 0.4);
+}
+
+.gate-btn.selected {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    transform: scale(1.02);
+}
+
+.gate-symbol {
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.gate-name {
+    font-size: 9px;
+    text-align: center;
+    line-height: 1.1;
+    opacity: 0.9;
+}
+
+/* Gate-specific colors */
+.gate-btn[data-gate="h"] { background: linear-gradient(135deg, #4dabf7 0%, #339af0 100%); }
+.gate-btn[data-gate="x"] { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+.gate-btn[data-gate="y"] { background: linear-gradient(135deg, #51cf66 0%, #40c057 100%); }
+.gate-btn[data-gate="z"] { background: linear-gradient(135deg, #9775fa 0%, #845ef7 100%); }
+.gate-btn[data-gate="cx"] { background: linear-gradient(135deg, #ffa94d 0%, #ff922b 100%); }
+.gate-btn[data-gate="measure"] { background: linear-gradient(135deg, #ffd43b 0%, #fab005 100%); }
+
+/* Instructions */
+.instructions {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instructions p {
+    color: #fff;
+    margin: 0 0 8px 0;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.instructions ol {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 10px;
+    line-height: 1.3;
+    margin: 0;
+    padding-left: 15px;
+}
+
+.instructions li {
+    margin-bottom: 3px;
+}
+
+/* Responsive Design for Fullscreen */
+@media (max-width: 1400px) {
+    .fullscreen-circuit-body {
+        grid-template-columns: 260px 1fr 300px;
+        gap: 12px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .fullscreen-circuit-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 12px;
+    }
+    
+    .circuit-controls-panel,
+    .gate-palette-panel {
+        max-height: 180px;
+    }
+    
+    .gate-buttons {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .fullscreen-circuit-overlay {
+        padding: 8px;
+    }
+    
+    .fullscreen-circuit-header {
+        padding: 12px 15px;
+    }
+    
+    .fullscreen-circuit-title h1 {
+        font-size: 18px;
+    }
+    
+    .fullscreen-circuit-body {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .gate-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .gate-btn {
+        min-height: 50px;
+        padding: 6px 4px;
+    }
+    
+    .gate-symbol {
+        font-size: 14px;
+    }
+    
+    .gate-name {
+        font-size: 8px;
+    }
+}
+
+/* Animation optimizations */
+@keyframes fullscreenFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fullscreen-circuit-overlay {
+    animation: fullscreenFadeIn 0.2s ease-out;
+}
+
+/* Custom scrollbars */
+.circuit-controls-panel::-webkit-scrollbar,
+.gate-palette-panel::-webkit-scrollbar {
+    width: 4px;
+}
+
+.circuit-controls-panel::-webkit-scrollbar-track,
+.gate-palette-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.circuit-controls-panel::-webkit-scrollbar-thumb,
+.gate-palette-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+}
+
+.circuit-controls-panel::-webkit-scrollbar-thumb:hover,
+.gate-palette-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Performance optimizations */
+.circuit-3d-container,
+.fullscreen-circuit-overlay,
+.gate-btn,
+.control-btn {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+    .fullscreen-circuit-overlay {
+        animation: none;
+    }
+    
+    .gate-btn,
+    .control-btn {
+        transition: none;
+    }
+    
+    .gate-btn:hover,
+    .control-btn:hover {
+        transform: none;
+    }
+}

@@ -11,6 +11,88 @@
     overflow: hidden;
 }
 
+/* Clean integration with existing templates - no duplicate headers */
+.circuit-3d-container {
+    /* Remove any margin/padding that might cause layout issues */
+    margin: 0;
+    padding: 15px;
+}
+
+/* Ensure the circuit view takes up the right space */
+.circuit-3d-view {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Clean info panel styling */
+.circuit-info-panel {
+    margin-top: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.circuit-info-panel .info-section {
+    padding: 0;
+    margin: 0;
+}
+
+.circuit-info-panel .info-item {
+    font-size: 12px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.circuit-info-panel .info-item span:first-child {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.circuit-info-panel .info-item span:last-child {
+    color: #4dabf7;
+    font-weight: 600;
+}
+
+/* Dashboard mode styles */
+.dashboard-circuit-container {
+    height: 400px;
+    min-height: 400px;
+    max-height: 500px;
+}
+
+.dashboard-circuit-container .circuit-3d-container {
+    height: 100%;
+    padding: 15px;
+}
+
+.dashboard-circuit-container .circuit-3d-view {
+    height: 300px;
+    min-height: 300px;
+    flex: none;
+}
+
+.dashboard-circuit-container .circuit-info-panel {
+    margin-top: 10px;
+    padding: 10px 0;
+}
+
+.dashboard-circuit-container .info-section {
+    padding: 10px;
+    margin: 0;
+}
+
+.dashboard-circuit-container .info-section h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.dashboard-circuit-container .info-item {
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
 .circuit-3d-container::before {
     content: '';
     position: absolute;
@@ -65,6 +147,19 @@
 .control-btn.active {
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.control-btn.primary-btn {
+    background: linear-gradient(135deg, #4dabf7 0%, #339af0 100%);
+    box-shadow: 0 4px 15px rgba(77, 171, 247, 0.4);
+    font-weight: 600;
+    padding: 12px 20px;
+    font-size: 16px;
+}
+
+.control-btn.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(77, 171, 247, 0.6);
 }
 
 .circuit-3d-view {
@@ -454,5 +549,418 @@
 }
 
 .circuit-3d-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== FULLSCREEN CIRCUIT STYLES ===== */
+
+/* Fullscreen Overlay */
+.fullscreen-circuit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.fullscreen-circuit-content {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Fullscreen Header */
+.fullscreen-circuit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.fullscreen-circuit-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.fullscreen-circuit-title i {
+    font-size: 24px;
+    color: #4dabf7;
+}
+
+.fullscreen-circuit-title h1 {
+    color: #fff;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.fullscreen-circuit-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.close-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    border: none;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+}
+
+/* Fullscreen Body */
+.fullscreen-circuit-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 300px 1fr 350px;
+    gap: 20px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Left Panel: Circuit Controls */
+.circuit-controls-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.control-section {
+    margin-bottom: 25px;
+}
+
+.control-section h4 {
+    color: #fff;
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-section h4 i {
+    color: #4dabf7;
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.setting-group {
+    margin-bottom: 15px;
+}
+
+.setting-group label {
+    display: block;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.setting-group input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    color: #fff;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.setting-group input:focus {
+    outline: none;
+    border-color: #4dabf7;
+    box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.3);
+}
+
+.info-display {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Center Panel: Circuit Visualization */
+.circuit-visualization-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+}
+
+.circuit-3d-container-fullscreen {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.circuit-3d-view-fullscreen {
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+}
+
+/* Right Panel: Gate Palette */
+.gate-palette-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.gate-category {
+    margin-bottom: 20px;
+}
+
+.gate-category h5 {
+    color: #fff;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+.gate-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.gate-btn {
+    background: linear-gradient(135deg, #4dabf7 0%, #339af0 100%);
+    border: none;
+    color: white;
+    padding: 12px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(77, 171, 247, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-height: 70px;
+    justify-content: center;
+    position: relative;
+}
+
+.gate-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(77, 171, 247, 0.6);
+}
+
+.gate-btn.selected {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    transform: scale(1.05);
+}
+
+.gate-btn.selected:hover {
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+}
+
+.gate-symbol {
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.gate-name {
+    font-size: 10px;
+    text-align: center;
+    line-height: 1.2;
+    opacity: 0.9;
+}
+
+/* Gate-specific colors */
+.gate-btn[data-gate="h"] { background: linear-gradient(135deg, #4dabf7 0%, #339af0 100%); }
+.gate-btn[data-gate="x"] { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+.gate-btn[data-gate="y"] { background: linear-gradient(135deg, #51cf66 0%, #40c057 100%); }
+.gate-btn[data-gate="z"] { background: linear-gradient(135deg, #9775fa 0%, #845ef7 100%); }
+.gate-btn[data-gate="cx"] { background: linear-gradient(135deg, #ffa94d 0%, #ff922b 100%); }
+.gate-btn[data-gate="t"] { background: linear-gradient(135deg, #20c997 0%, #1c7ed6 100%); }
+.gate-btn[data-gate="s"] { background: linear-gradient(135deg, #fd7e14 0%, #f76707 100%); }
+.gate-btn[data-gate="rx"] { background: linear-gradient(135deg, #e83e8c 0%, #d63384 100%); }
+.gate-btn[data-gate="ry"] { background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); }
+.gate-btn[data-gate="rz"] { background: linear-gradient(135deg, #dc3545 0%, #c92a2a 100%); }
+.gate-btn[data-gate="measure"] { background: linear-gradient(135deg, #ffd43b 0%, #fab005 100%); }
+
+/* Instructions */
+.instructions {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.instructions p {
+    color: #fff;
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.instructions ol, .instructions ul {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.instructions li {
+    margin-bottom: 4px;
+}
+
+/* Responsive Design for Fullscreen */
+@media (max-width: 1400px) {
+    .fullscreen-circuit-body {
+        grid-template-columns: 280px 1fr 320px;
+        gap: 15px;
+        padding: 15px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .fullscreen-circuit-body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        gap: 15px;
+    }
+    
+    .circuit-controls-panel,
+    .gate-palette-panel {
+        max-height: 200px;
+    }
+    
+    .gate-buttons {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .fullscreen-circuit-overlay {
+        padding: 10px;
+    }
+    
+    .fullscreen-circuit-header {
+        padding: 15px 20px;
+    }
+    
+    .fullscreen-circuit-title h1 {
+        font-size: 20px;
+    }
+    
+    .fullscreen-circuit-body {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .gate-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .gate-btn {
+        min-height: 60px;
+        padding: 8px 6px;
+    }
+    
+    .gate-symbol {
+        font-size: 16px;
+    }
+    
+    .gate-name {
+        font-size: 9px;
+    }
+}
+
+/* Animation for fullscreen overlay */
+@keyframes fullscreenFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.fullscreen-circuit-overlay {
+    animation: fullscreenFadeIn 0.3s ease-out;
+}
+
+/* Custom scrollbars for fullscreen panels */
+.circuit-controls-panel::-webkit-scrollbar,
+.gate-palette-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.circuit-controls-panel::-webkit-scrollbar-track,
+.gate-palette-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.circuit-controls-panel::-webkit-scrollbar-thumb,
+.gate-palette-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.circuit-controls-panel::-webkit-scrollbar-thumb:hover,
+.gate-palette-panel::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
 }

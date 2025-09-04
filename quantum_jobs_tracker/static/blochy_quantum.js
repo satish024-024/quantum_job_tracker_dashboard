@@ -89,6 +89,17 @@ function rot_phosphor(axis_op, angle, state, divider=10) {
         warr.push(w);
     }
     
+    // Safely get phosphor color with fallback
+    let phosphorColor = '#1a237e'; // Default color
+    try {
+        const colorElement = document.getElementById('phosphor_color');
+        if (colorElement && colorElement.value) {
+            phosphorColor = colorElement.value;
+        }
+    } catch (error) {
+        console.log("Using default phosphor color");
+    }
+    
     var hist = {
         x:uarr, y: varr, z: warr,
         type: 'scatter3d',
@@ -96,18 +107,40 @@ function rot_phosphor(axis_op, angle, state, divider=10) {
         hoverinfo: 'skip', 
         mode: 'lines',
         opacity: 1.0,
-        line: {color: document.getElementById('phosphor_color').value, width:3},
+        line: {color: phosphorColor, width:3},
     }
     PHOSPHOR.push(hist);
 }
 
 function rabi_plot(data=null) {
-    time = document.getElementById('pulselength').value;
+    // Safely get values with fallbacks
+    let time = 0.5; // Default pulse length
+    let detune = 0; // Default detuning
+    let w1 = 1; // Default amplitude
+    
+    try {
+        const pulseElement = document.getElementById('pulselength');
+        const detuneElement = document.getElementById('detuning');
+        const amplitudeElement = document.getElementById('amplitude');
+        
+        if (pulseElement && pulseElement.value) {
+            time = parseFloat(pulseElement.value);
+        }
+        if (detuneElement && detuneElement.value) {
+            detune = parseFloat(detuneElement.value);
+        }
+        if (amplitudeElement && amplitudeElement.value) {
+            w1 = parseFloat(amplitudeElement.value);
+        }
+    } catch (error) {
+        console.log("Using default values for rabi plot");
+    }
+    
    if (data === null) {
     t_stop = Math.max(2,time);
     tax = linspace(0,t_stop,101);
-    detune = 2*math.PI*document.getElementById('detuning').value;
-    w1 = 2*math.PI*document.getElementById('amplitude').value;
+    detune = 2*math.PI*detune;
+    w1 = 2*math.PI*w1;
     Omega = math.sqrt(detune*detune+w1*w1);
     arg_ax = math.dotMultiply(tax,Omega/2);
     y = math.map(arg_ax,math.sin);
@@ -172,9 +205,33 @@ function rabi_plot(data=null) {
     
   function pulse(axis, time, state) {
     opZ = math.matrix([[math.complex(0.5,0),0],[0,math.complex(-0.5,0)]]);
-    detune = 2*math.PI*document.getElementById('detuning').value;
-    w1 = 2*math.PI*document.getElementById('amplitude').value;
-    phase = math.PI/180*document.getElementById('phase').value;
+    
+    // Safely get values with fallbacks
+    let detune = 0; // Default detuning
+    let w1 = 1; // Default amplitude
+    let phase = 0; // Default phase
+    
+    try {
+        const detuneElement = document.getElementById('detuning');
+        const amplitudeElement = document.getElementById('amplitude');
+        const phaseElement = document.getElementById('phase');
+        
+        if (detuneElement && detuneElement.value) {
+            detune = parseFloat(detuneElement.value);
+        }
+        if (amplitudeElement && amplitudeElement.value) {
+            w1 = parseFloat(amplitudeElement.value);
+        }
+        if (phaseElement && phaseElement.value) {
+            phase = parseFloat(phaseElement.value);
+        }
+    } catch (error) {
+        console.log("Using default values for pulse");
+    }
+    
+    detune = 2*math.PI*detune;
+    w1 = 2*math.PI*w1;
+    phase = math.PI/180*phase;
     H0 = math.multiply(opZ,detune);
     if (axis === "x") {
       //opX = math.matrix([[0,0.5*math.exp(math.complex(0,phase+math.PI/2))],[0.5*math.exp(math.complex(0,-phase-math.PI/2)),0]]); 
@@ -207,6 +264,17 @@ function rabi_plot(data=null) {
         warr.push(w);
     }
     
+    // Safely get phosphor color with fallback
+    let phosphorColor = '#1a237e'; // Default color
+    try {
+        const colorElement = document.getElementById('phosphor_color');
+        if (colorElement && colorElement.value) {
+            phosphorColor = colorElement.value;
+        }
+    } catch (error) {
+        console.log("Using default phosphor color");
+    }
+    
     var hist = {
         x:uarr, y: varr, z: warr,
         type: 'scatter3d',
@@ -214,11 +282,7 @@ function rabi_plot(data=null) {
         hoverinfo: 'skip', 
         mode: 'lines',
         opacity: 1.0,
-        line: {color: document.getElementById('phosphor_color').value, width:3},
+        line: {color: phosphorColor, width:3},
     }
     PHOSPHOR.push(hist);
   }
-  
-  
-  
-  

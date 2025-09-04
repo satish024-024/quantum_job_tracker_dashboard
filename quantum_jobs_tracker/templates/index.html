@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Jobs Tracker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='3d_circuit_style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="quantum-container">
@@ -86,13 +88,13 @@
             </div>
             
             <div class="section quantum-circuit">
-                <h2>Quantum Circuit Representation</h2>
-                <div id="quantum-circuit-visualization">
-                    <canvas id="superposition-canvas"></canvas>
+                <h2>3D Quantum Circuit</h2>
+                <div id="3d-quantum-circuit" class="dashboard-circuit-container">
+                    <!-- 3D Circuit will be rendered here -->
                 </div>
                 <p class="circuit-explanation">
-                    This quantum circuit represents the current state of the quantum computing system.
-                    Each qubit encodes information about backend availability and job status.
+                    Interactive 3D quantum circuit visualization showing the current quantum state and operations.
+                    Click the fullscreen button to access advanced controls and tools.
                 </p>
             </div>
         </div>
@@ -102,6 +104,24 @@
         </footer>
     </div>
 
+    <!-- Load required libraries -->
+    <script src="https://cdn.plot.ly/plotly-2.16.1.min.js"></script>
+    <script src="https://unpkg.com/mathjs@11.11.0/lib/browser/math.min.js"></script>
+    
+    <!-- Load quantum circuit scripts -->
+    <script src="{{ url_for('static', filename='3d_quantum_circuit_optimized.js') }}"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <!-- Initialize 3D circuit after page load -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize 3D circuit after a short delay to ensure all scripts are loaded
+            setTimeout(() => {
+                if (typeof init3DQuantumCircuit === 'function') {
+                    init3DQuantumCircuit();
+                }
+            }, 500);
+        });
+    </script>
 </body>
 </html>

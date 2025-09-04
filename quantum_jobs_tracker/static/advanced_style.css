@@ -66,6 +66,14 @@ html, body {
     pointer-events: none;
 }
 
+.loading-subtext {
+    font-size: 0.8rem;
+    color: #888;
+    margin-top: 0.5rem;
+    font-style: italic;
+    text-align: center;
+}
+
 .loading-spinner {
     position: relative;
     width: 60px;
@@ -87,18 +95,185 @@ html, body {
     100% { transform: rotate(360deg); }
 }
 
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    0% { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    100% { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200px 0; }
+    100% { background-position: calc(200px + 100%) 0; }
+}
+
 .loading-text {
     color: #00d4ff;
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
     text-align: center;
+    animation: fadeInUp 0.6s ease-out;
 }
 
 .loading-subtext {
     color: #7f8c8d;
     font-size: 0.9rem;
     margin-bottom: 1rem;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.loading-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 212, 255, 0.2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #00d4ff, #9b59b6, #00d4ff);
+    background-size: 200px 100%;
+    border-radius: 2px;
+    animation: shimmer 2s infinite;
+    transition: width 2s ease-in-out;
+}
+
+/* Enhanced metric card animations */
+.metric-value {
+    transition: all 0.3s ease;
+}
+
+.metric-value:hover {
+    transform: scale(1.05);
+    color: #00d4ff;
+}
+
+/* Widget content animations */
+.widget-content {
+    transition: opacity 0.5s ease-in-out;
+}
+
+.widget-content.fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Circuit widget specific styles */
+.circuit-3d-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 1rem;
+}
+
+.circuit-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.control-btn {
+    padding: 0.5rem 1rem;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 6px;
+    color: #00d4ff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.control-btn:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: #00d4ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.circuit-3d-visualization {
+    flex: 1;
+    min-height: 300px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.circuit-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #00d4ff;
+}
+
+.circuit-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 212, 255, 0.2);
+    border-top: 3px solid #00d4ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+.circuit-info-panel {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.circuit-info-panel h4 {
+    margin: 0 0 1rem 0;
+    color: #00d4ff;
+    font-size: 1.1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+}
+
+.info-item .label {
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
+.info-item .value {
+    color: #00d4ff;
+    font-weight: 600;
     text-align: center;
     opacity: 0.8;
 }
@@ -575,6 +750,38 @@ body {
 
 .status-indicator.disconnected {
     background: var(--warning);
+}
+
+.status-indicator.error {
+    background: var(--danger);
+}
+
+.status-indicator.unknown {
+    background: var(--secondary);
+}
+
+.connection-status.connected {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.connection-status.disconnected {
+    background: rgba(241, 196, 15, 0.1);
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.connection-status.error {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+.connection-status.unknown {
+    background: rgba(155, 89, 182, 0.1);
+    border-color: var(--secondary);
+    color: var(--secondary);
 }
 
 /* Header Right Section */
@@ -1447,6 +1654,515 @@ body {
     color: #666666 !important;
 }
 
+/* Fix white text in light mode */
+.light-theme .widget-content,
+.light-theme .backend-name,
+.light-theme .backend-info,
+.light-theme .jobs-table,
+.light-theme .jobs-table th,
+.light-theme .jobs-table td,
+.light-theme .detail-item .value,
+.light-theme .state-equation,
+.light-theme .search-input,
+.light-theme .widget-btn,
+.light-theme .gate-btn,
+.light-theme .axis-control label,
+.light-theme .gate-row span,
+.light-theme .pulse-input label,
+.light-theme .pulse-input input,
+.light-theme .controls-section label,
+.light-theme .controls-section input,
+.light-theme .pulse-input span,
+.light-theme .stat-item .value,
+.light-theme .close-btn,
+.light-theme .mobile-menu-header h3,
+.light-theme .mobile-menu-close,
+.light-theme .mobile-menu-item,
+.light-theme .fullscreen-bloch-title h1,
+.light-theme .state-equation-fullscreen,
+.light-theme .detail-item-fullscreen .value,
+.light-theme .axis-control label,
+.light-theme .gate-row-fullscreen span,
+.light-theme .custom-angle input,
+.light-theme .settings-btn,
+.light-theme .notification-content,
+.light-theme .notification-message {
+    color: #333333 !important;
+}
+
+/* Fix specific elements that need different colors in light mode */
+.light-theme .backend-status.active {
+    color: #ffffff !important; /* Keep white text on colored backgrounds */
+}
+
+.light-theme .backend-status.inactive {
+    color: #ffffff !important; /* Keep white text on colored backgrounds */
+}
+
+.light-theme .status-badge {
+    color: #ffffff !important; /* Keep white text on colored status badges */
+}
+
+.light-theme .progress-bar-text {
+    color: #ffffff !important; /* Keep white text on progress bars */
+}
+
+.light-theme .action-btn {
+    color: #ffffff !important; /* Keep white text on action buttons */
+}
+
+.light-theme .real-data-status {
+    color: #ffffff !important; /* Keep white text on status indicators */
+}
+
+.light-theme .modal-btn {
+    color: #ffffff !important; /* Keep white text on modal buttons */
+}
+
+.light-theme .download-option-btn:hover i,
+.light-theme .download-option-btn:hover span {
+    color: #ffffff !important; /* Keep white text on hover */
+}
+
+.light-theme .gate-btn:hover {
+    color: #ffffff !important; /* Keep white text on hover */
+}
+
+.light-theme .action-btn:hover {
+    color: #ffffff !important; /* Keep white text on hover */
+}
+
+.light-theme .mobile-menu-item:hover i {
+    color: #ffffff !important; /* Keep white text on hover */
+}
+
+.light-theme .gate-btn:hover {
+    color: #ffffff !important; /* Keep white text on hover */
+}
+
+.light-theme .error-content {
+    color: #ffffff !important; /* Keep white text on error backgrounds */
+}
+
+.light-theme .error-content button {
+    color: #ffffff !important; /* Keep white text on error buttons */
+}
+
+.light-theme .toast-close {
+    color: #ffffff !important; /* Keep white text on toast close buttons */
+}
+
+.light-theme .notification-close {
+    color: #ffffff !important; /* Keep white text on notification close buttons */
+}
+
+/* Additional light theme fixes for better visibility */
+.light-theme .metric-value {
+    color: #333333 !important;
+}
+
+.light-theme .metric-trend {
+    color: #666666 !important;
+}
+
+.light-theme .backend-card {
+    background: #f8f9fa !important;
+    border: 1px solid #e0e0e0 !important;
+    color: #333333 !important;
+}
+
+.light-theme .backend-card .backend-name {
+    color: #333333 !important;
+}
+
+.light-theme .backend-card .backend-info {
+    color: #666666 !important;
+}
+
+.light-theme .empty-widget {
+    color: #666666 !important;
+}
+
+.light-theme .loading-text {
+    color: #666666 !important;
+}
+
+.light-theme .bloch-info {
+    color: #333333 !important;
+}
+
+.light-theme .bloch-info .detail-item .label {
+    color: #666666 !important;
+}
+
+.light-theme .bloch-info .detail-item .value {
+    color: #333333 !important;
+}
+
+.light-theme .quantum-state-display {
+    color: #333333 !important;
+}
+
+.light-theme .quantum-state-display h3 {
+    color: #333333 !important;
+}
+
+.light-theme .quantum-state-display .state-equation {
+    color: #333333 !important;
+    background: #f0f0f0 !important;
+}
+
+.light-theme .quantum-state-display .state-coefficients {
+    color: #666666 !important;
+}
+
+.light-theme .performance-metrics {
+    color: #333333 !important;
+}
+
+.light-theme .performance-metrics .metric-item {
+    color: #333333 !important;
+}
+
+.light-theme .performance-metrics .metric-label {
+    color: #666666 !important;
+}
+
+.light-theme .performance-metrics .metric-value {
+    color: #333333 !important;
+}
+
+.light-theme .entanglement-visualization {
+    color: #333333 !important;
+}
+
+.light-theme .entanglement-info {
+    color: #333333 !important;
+}
+
+.light-theme .entanglement-label {
+    color: #666666 !important;
+}
+
+.light-theme .entanglement-fidelity {
+    color: #333333 !important;
+}
+
+.light-theme .results-visualization {
+    color: #333333 !important;
+}
+
+.light-theme .results-info {
+    color: #333333 !important;
+}
+
+.light-theme .results-label {
+    color: #666666 !important;
+}
+
+.light-theme .results-shots,
+.light-theme .results-fidelity {
+    color: #333333 !important;
+}
+
+/* Additional comprehensive light mode fixes for all widget elements */
+.light-theme .bloch-diagram-container,
+.light-theme .bloch-sphere-diagram,
+.light-theme .bloch-simple-controls,
+.light-theme .bloch-container,
+.light-theme .bloch-controls,
+.light-theme .bloch-widget,
+.light-theme .bloch-widget .widget-content,
+.light-theme .bloch-widget #blochy-container,
+.light-theme .bloch-svg,
+.light-theme .bloch-3d-container,
+.light-theme .bloch-3d-canvas,
+.light-theme .bloch-state-display,
+.light-theme .bloch-state-vector,
+.light-theme .bloch-coordinates,
+.light-theme .bloch-angles,
+.light-theme .bloch-controls-panel,
+.light-theme .bloch-rotation-controls,
+.light-theme .bloch-gate-controls,
+.light-theme .bloch-pulse-controls,
+.light-theme .bloch-custom-controls {
+    color: #333333 !important;
+}
+
+.light-theme .results-widget,
+.light-theme .results-widget .widget-content,
+.light-theme .results-container,
+.light-theme .results-chart,
+.light-theme .results-bars,
+.light-theme .results-bar,
+.light-theme .results-label,
+.light-theme .results-value,
+.light-theme .results-count,
+.light-theme .results-percentage,
+.light-theme .results-stats,
+.light-theme .results-shots-info,
+.light-theme .results-fidelity-info,
+.light-theme .results-loading,
+.light-theme .results-empty,
+.light-theme .results-error {
+    color: #333333 !important;
+}
+
+.light-theme .quantum-state-widget,
+.light-theme .quantum-state-widget .widget-content,
+.light-theme .quantum-state-container,
+.light-theme .quantum-state-vector,
+.light-theme .quantum-state-equation,
+.light-theme .quantum-state-coefficients,
+.light-theme .quantum-state-amplitudes,
+.light-theme .quantum-state-alpha,
+.light-theme .quantum-state-beta,
+.light-theme .quantum-state-gamma,
+.light-theme .quantum-state-delta,
+.light-theme .quantum-state-probabilities,
+.light-theme .quantum-state-phase,
+.light-theme .quantum-state-info,
+.light-theme .quantum-state-details,
+.light-theme .quantum-state-metrics {
+    color: #333333 !important;
+}
+
+.light-theme .performance-widget,
+.light-theme .performance-widget .widget-content,
+.light-theme .performance-container,
+.light-theme .performance-list,
+.light-theme .performance-item,
+.light-theme .performance-metric,
+.light-theme .performance-label,
+.light-theme .performance-value,
+.light-theme .performance-unit,
+.light-theme .performance-trend,
+.light-theme .performance-change,
+.light-theme .performance-status,
+.light-theme .performance-indicator,
+.light-theme .performance-chart,
+.light-theme .performance-graph {
+    color: #333333 !important;
+}
+
+.light-theme .metrics-widget,
+.light-theme .metrics-widget .widget-content,
+.light-theme .metrics-container,
+.light-theme .metrics-grid,
+.light-theme .metrics-card,
+.light-theme .metrics-title,
+.light-theme .metrics-value,
+.light-theme .metrics-label,
+.light-theme .metrics-description,
+.light-theme .metrics-trend,
+.light-theme .metrics-change,
+.light-theme .metrics-icon,
+.light-theme .metrics-chart {
+    color: #333333 !important;
+}
+
+.light-theme .entanglement-widget,
+.light-theme .entanglement-widget .widget-content,
+.light-theme .entanglement-container,
+.light-theme .entanglement-visualization,
+.light-theme .entanglement-diagram,
+.light-theme .entanglement-graph,
+.light-theme .entanglement-nodes,
+.light-theme .entanglement-edges,
+.light-theme .entanglement-labels,
+.light-theme .entanglement-values,
+.light-theme .entanglement-fidelity,
+.light-theme .entanglement-concurrence,
+.light-theme .entanglement-tangle,
+.light-theme .entanglement-measures {
+    color: #333333 !important;
+}
+
+.light-theme .circuit-widget,
+.light-theme .circuit-widget .widget-content,
+.light-theme .circuit-container,
+.light-theme .circuit-diagram,
+.light-theme .circuit-gates,
+.light-theme .circuit-wires,
+.light-theme .circuit-labels,
+.light-theme .circuit-info,
+.light-theme .circuit-details,
+.light-theme .circuit-metrics,
+.light-theme .circuit-depth,
+.light-theme .circuit-width,
+.light-theme .circuit-gate-count {
+    color: #333333 !important;
+}
+
+.light-theme .jobs-widget,
+.light-theme .jobs-widget .widget-content,
+.light-theme .jobs-container,
+.light-theme .jobs-list,
+.light-theme .jobs-item,
+.light-theme .jobs-table,
+.light-theme .jobs-header,
+.light-theme .jobs-row,
+.light-theme .jobs-cell,
+.light-theme .jobs-id,
+.light-theme .jobs-status,
+.light-theme .jobs-backend,
+.light-theme .jobs-time,
+.light-theme .jobs-progress,
+.light-theme .jobs-actions {
+    color: #333333 !important;
+}
+
+.light-theme .backends-widget,
+.light-theme .backends-widget .widget-content,
+.light-theme .backends-container,
+.light-theme .backends-list,
+.light-theme .backends-item,
+.light-theme .backends-card,
+.light-theme .backends-name,
+.light-theme .backends-info,
+.light-theme .backends-status,
+.light-theme .backends-qubits,
+.light-theme .backends-queue,
+.light-theme .backends-availability {
+    color: #333333 !important;
+}
+
+/* Fix specific text elements that might still be white */
+.light-theme .widget-title,
+.light-theme .widget-subtitle,
+.light-theme .widget-description,
+.light-theme .widget-status,
+.light-theme .widget-message,
+.light-theme .widget-error,
+.light-theme .widget-warning,
+.light-theme .widget-info,
+.light-theme .widget-success,
+.light-theme .widget-loading,
+.light-theme .widget-empty,
+.light-theme .widget-placeholder {
+    color: #333333 !important;
+}
+
+/* Fix chart and visualization text */
+.light-theme .chart-title,
+.light-theme .chart-label,
+.light-theme .chart-value,
+.light-theme .chart-legend,
+.light-theme .chart-axis,
+.light-theme .chart-tick,
+.light-theme .chart-tooltip,
+.light-theme .visualization-title,
+.light-theme .visualization-label,
+.light-theme .visualization-value,
+.light-theme .visualization-info {
+    color: #333333 !important;
+}
+
+/* Fix form and input elements */
+.light-theme .form-label,
+.light-theme .form-input,
+.light-theme .form-select,
+.light-theme .form-textarea,
+.light-theme .form-help,
+.light-theme .form-error,
+.light-theme .form-success,
+.light-theme .input-label,
+.light-theme .input-value,
+.light-theme .input-placeholder {
+    color: #333333 !important;
+}
+
+/* Fix navigation and menu elements */
+.light-theme .nav-item,
+.light-theme .nav-link,
+.light-theme .nav-label,
+.light-theme .nav-icon,
+.light-theme .menu-item,
+.light-theme .menu-link,
+.light-theme .menu-label,
+.light-theme .menu-icon,
+.light-theme .breadcrumb,
+.light-theme .breadcrumb-item {
+    color: #333333 !important;
+}
+
+/* Fix tooltip and popover elements */
+.light-theme .tooltip,
+.light-theme .tooltip-content,
+.light-theme .tooltip-text,
+.light-theme .popover,
+.light-theme .popover-content,
+.light-theme .popover-text,
+.light-theme .dropdown,
+.light-theme .dropdown-content,
+.light-theme .dropdown-item {
+    color: #333333 !important;
+}
+
+/* Fix any remaining white text issues with more specific selectors */
+.light-theme * {
+    color: inherit;
+}
+
+.light-theme .text-white,
+.light-theme [style*="color: white"],
+.light-theme [style*="color: #fff"],
+.light-theme [style*="color: #ffffff"] {
+    color: #333333 !important;
+}
+
+/* Fix any elements that might have white text from JavaScript or inline styles */
+.light-theme .widget-content *:not(.status-badge):not(.progress-bar-text):not(.action-btn):not(.real-data-status):not(.modal-btn):not(.error-content):not(.toast-close):not(.notification-close) {
+    color: #333333 !important;
+}
+
+/* Ensure all text in widgets is visible in light mode */
+.light-theme .widget-container *:not(.status-badge):not(.progress-bar-text):not(.action-btn):not(.real-data-status):not(.modal-btn):not(.error-content):not(.toast-close):not(.notification-close):not(.gate-btn:hover):not(.action-btn:hover):not(.download-option-btn:hover):not(.mobile-menu-item:hover) {
+    color: #333333 !important;
+}
+
+/* Fix any remaining chart or canvas text */
+.light-theme canvas,
+.light-theme svg,
+.light-theme .plotly,
+.light-theme .plotly-graph-div {
+    color: #333333 !important;
+}
+
+/* Fix any remaining table text */
+.light-theme table,
+.light-theme table *:not(.status-badge):not(.progress-bar-text):not(.action-btn):not(.real-data-status):not(.modal-btn):not(.error-content):not(.toast-close):not(.notification-close) {
+    color: #333333 !important;
+}
+
+/* Fix any remaining list text */
+.light-theme ul,
+.light-theme ol,
+.light-theme li,
+.light-theme ul *:not(.status-badge):not(.progress-bar-text):not(.action-btn):not(.real-data-status):not(.modal-btn):not(.error-content):not(.toast-close):not(.notification-close),
+.light-theme ol *:not(.status-badge):not(.progress-bar-text):not(.action-btn):not(.real-data-status):not(.modal-btn):not(.error-content):not(.toast-close):not(.notification-close) {
+    color: #333333 !important;
+}
+
+/* Fix any remaining paragraph and heading text */
+.light-theme p,
+.light-theme h1,
+.light-theme h2,
+.light-theme h3,
+.light-theme h4,
+.light-theme h5,
+.light-theme h6,
+.light-theme span,
+.light-theme div,
+.light-theme section,
+.light-theme article,
+.light-theme aside,
+.light-theme main,
+.light-theme header,
+.light-theme footer {
+    color: #333333 !important;
+}
+
 .widget-container:hover {
     border-color: #2196f3;
     box-shadow: 0 4px 16px rgba(33, 150, 243, 0.2);
@@ -1652,6 +2368,8 @@ body {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    position: relative !important;
+    overflow: visible !important;
 }
 
 /* Ensure the Bloch sphere is visible in the widget */
@@ -1660,10 +2378,13 @@ body {
     min-height: 350px;
 }
 
-.bloch-widget #bloch-3d-container {
+.bloch-widget #blochy-container {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 1 !important;
 }
 
 #bloch-canvas {
@@ -1742,17 +2463,45 @@ body {
     table-layout: fixed;
 }
 
-.jobs-table th:nth-child(1) { width: 18%; } /* Job ID */
-.jobs-table th:nth-child(2) { width: 22%; } /* Backend */
-.jobs-table th:nth-child(3) { width: 18%; } /* Status */
-.jobs-table th:nth-child(4) { width: 12%; } /* Qubits */
-.jobs-table th:nth-child(5) { width: 18%; } /* Progress */
-.jobs-table th:nth-child(6) { width: 12%; } /* Actions */
+.jobs-table th:nth-child(1) { width: 16%; } /* Algorithm */
+.jobs-table th:nth-child(2) { width: 16%; } /* Backend */
+.jobs-table th:nth-child(3) { width: 8%; }  /* Qubits */
+.jobs-table th:nth-child(4) { width: 12%; } /* Status */
+.jobs-table th:nth-child(5) { width: 16%; } /* Circuit */
+.jobs-table th:nth-child(6) { width: 16%; } /* Progress */
+.jobs-table th:nth-child(7) { width: 8%; }  /* Actions */
 
 .jobs-table th,
 .jobs-table td {
     padding: 0.5rem 0.75rem;
     text-align: left;
+}
+
+/* Qubits cell styling */
+.qubits-cell {
+    text-align: center;
+    font-weight: 600;
+}
+
+.qubits-value {
+    color: #00d4aa !important;
+    font-size: 1rem !important;
+    font-weight: bold !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Circuit info styling */
+.gates-info {
+    color: #4dabf7;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.depth-info {
+    color: #ffaa00;
+    font-weight: 500;
     border-bottom: 1px solid var(--glass-border);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3725,7 +4474,7 @@ html, body {
     background: var(--accent-purple);
 }
 
-/* Widgets Grid Layout */
+/* Widgets Grid Layout - 4x2 Grid */
 .widgets-grid {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
@@ -3741,6 +4490,47 @@ html, body {
     align-items: stretch;
     justify-items: stretch;
     position: relative;
+}
+
+/* Specific widget positioning in 4x2 grid */
+.widgets-grid .backends-widget {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .jobs-widget {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .circuit-widget {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .entanglement-widget {
+    grid-column: 4 / 5;
+    grid-row: 1 / 2;
+}
+
+.widgets-grid .results-widget {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+.widgets-grid .bloch-widget {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+}
+
+.widgets-grid .quantum-state-widget {
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+}
+
+.widgets-grid .performance-widget {
+    grid-column: 4 / 5;
+    grid-row: 2 / 3;
 }
 
 /* Force grid layout with higher specificity */
@@ -3762,28 +4552,271 @@ section.widgets-grid > .widget-container {
     width: 100%;
     box-sizing: border-box;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
     background: linear-gradient(135deg, rgba(26, 26, 46, 0.8), rgba(15, 52, 96, 0.8));
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    /* Ensure proper spacing for headers */
-    padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .widget-container:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
-    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Widget Header Styling */
+.widget-header {
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 12px 0 0;
+}
+
+.widget-header h2 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.widget-header h2 i {
+    color: #4dabf7;
+}
+
+.widget-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.widget-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.widget-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Widget Content Styling */
+.widget-content {
+    flex: 1;
+    padding: 1rem;
+    overflow: auto;
+    color: #ffffff;
 }
 
 /* Remove scrollbars from widgets */
 .widget-content::-webkit-scrollbar,
 .widget-container::-webkit-scrollbar {
     display: none;
+}
+
+/* Backend Cards Styling */
+.backend-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.backend-card:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.backend-name {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.backend-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.backend-status.active {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.backend-status.maintenance {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.backend-info {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Jobs Table Styling */
+.jobs-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ffffff;
+}
+
+.jobs-table th,
+.jobs-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.jobs-table th {
+    background: rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.jobs-table tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-badge.done {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+}
+
+.status-badge.running {
+    background: rgba(52, 152, 219, 0.2);
+    color: #3498db;
+}
+
+.status-badge.queued {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+}
+
+.real-badge, .sim-badge {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* Loading and Empty States */
+.loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.loading-spinner {
+    margin-bottom: 1rem;
+}
+
+.spinner-ring {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid #4dabf7;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.loading-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4dabf7, #339af0);
+    width: 0%;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+.empty-state, .empty-widget {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Real Data Indicators */
+.real-data-badge, .sim-data-badge {
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.real-data-badge {
+    background: rgba(46, 204, 113, 0.2);
+    color: #2ecc71;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.sim-data-badge {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.3);
 }
 
 /* Fix canvas and SVG sizing inside widgets */

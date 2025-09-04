@@ -1,8 +1,20 @@
 function init_plotting(data) {
 
     const config = {
-        displayModeBar: false, // hide toolbar
-        responsive:true // resize 
+        displayModeBar: true, // show toolbar
+        responsive:true, // resize 
+        modeBarButtonsToAdd: [{
+            name: 'Fullscreen',
+            icon: {
+                'width': 857.1,
+                'height': 1000,
+                'path': 'm214-7h429v71h-429v-71z m500 0h429v71h-429v-71z m-500 500h429v71h-429v-71z m500 0h429v71h-429v-71z m-500 500h429v71h-429v-71z m500 0h429v71h-429v-71z m-500 500h429v71h-429v-71z m500 0h429v71h-429v-71z'
+            },
+            click: function(gd) {
+                toggleFullscreen();
+            }
+        }],
+        modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
     };
 
     var layout = {
@@ -54,24 +66,11 @@ function init_plotting(data) {
             r: 0,
             b: 0,
             t: 0
-        },
-        annotations: [
-            {
-                showarrow: false,
-                text: 'bloch.kherb.io',
-                x:1.0,
-                y:0.0,
-                xref: 'paper',
-                yref: 'paper', 
-                xanchor: 'right',
-                yanchor: 'bottom',
-                opacity: 0.4
-            }
-        ]
+        }
         
     };
 
-    Plotly.react('myDiv', data, layout,config);
+    Plotly.react('blochy-plot', data, layout,config);
 }
 
 function cylinder_axes(v,k=[2,0,0]) {
@@ -95,8 +94,18 @@ function cylinder_axes(v,k=[2,0,0]) {
 }
 
 function gen_vector_plot(vector,normalize=true) {
-    color = document.getElementById('spin_color').value;
-    [u,v,w] = vector;
+    try {
+        // Safely get color with fallback
+        let color = '#1a237e'; // Default blue color
+        try {
+            const colorElement = document.getElementById('spin_color');
+            if (colorElement && colorElement.value) {
+                color = colorElement.value;
+            }
+        } catch (error) {
+            console.log("Using default color for vector plot");
+        }
+        [u,v,w] = vector;
     if (normalize === true) {
         l = math.sqrt(u**2+v**2+w**2);
         u = u/l;
@@ -228,17 +237,36 @@ function gen_vector_plot(vector,normalize=true) {
         }
     //console.log(upp);
     return [head,upp]
+    
+    } catch (error) {
+        console.error('Error generating vector plot:', error);
+        // Return a minimal vector if there's an error
+        return [{
+            name: 'error_vector',
+            x: [0, 0.1], y: [0, 0.1], z: [0, 0.1],
+            type: 'scatter3d',
+            mode: 'lines',
+            line: {color: '#ff0000', width: 3},
+            showscale: false,
+            hoverinfo: 'skip'
+        }];
+    }
 }
 
 function gen_bloch_sphere() {
+    try {
+        // Check if required functions are available
+        if (typeof linspace === 'undefined' || typeof meshgrid === 'undefined' || typeof math === 'undefined') {
+            throw new Error('Required functions (linspace, meshgrid, math) not available');
+        }
 
-    theta = linspace(0,Math.PI,20);
-    phi = linspace(0,2*Math.PI,40);
-    [u,v] = meshgrid(theta,phi);
-    su = math.map(u,math.sin);
-    xs = math.dotMultiply(math.map(v,math.cos),su);
-    ys = math.dotMultiply(math.map(v,math.sin),su);
-    zs = math.map(u,math.cos);
+        theta = linspace(0,Math.PI,20);
+        phi = linspace(0,2*Math.PI,40);
+        [u,v] = meshgrid(theta,phi);
+        su = math.map(u,math.sin);
+        xs = math.dotMultiply(math.map(v,math.cos),su);
+        ys = math.dotMultiply(math.map(v,math.sin),su);
+        zs = math.map(u,math.cos);
     //console.log("Here is the sphere");
     //console.log(xs);
     //console.log(ys);
@@ -366,13 +394,22 @@ function gen_bloch_sphere() {
 
     }
 
-    north_text = document.getElementById('north_text').value;
-    south_text = document.getElementById('south_text').value;
-    if (north_text != "") {
-        north_text = "￨" + north_text + "〉"
-    }
-    if (south_text != "") {
-        south_text = "￨" + south_text + "〉"
+    // Safely get text values with fallbacks
+    let north_text = "0";
+    let south_text = "1";
+    
+    try {
+        const northElement = document.getElementById('north_text');
+        const southElement = document.getElementById('south_text');
+        
+        if (northElement && northElement.value !== "") {
+            north_text = "￨" + northElement.value + "〉";
+        }
+        if (southElement && southElement.value !== "") {
+            south_text = "￨" + southElement.value + "〉";
+        }
+    } catch (error) {
+        console.log("Using default text values for Bloch sphere");
     }
 
     var axes = {
@@ -409,10 +446,22 @@ function gen_bloch_sphere() {
 
        
 
-
     return [sphere, gridlines, gridlines_bold,equator_plane,axes,lower_tag]
     //return [axes,lower_tag]
     
+    } catch (error) {
+        console.error('Error generating Bloch sphere:', error);
+        // Return a minimal sphere if there's an error
+        return [{
+            name: 'error_sphere',
+            x: [0], y: [0], z: [0],
+            type: 'scatter3d',
+            mode: 'markers',
+            marker: {size: 1, color: 'red'},
+            showscale: false,
+            hoverinfo: 'skip'
+        }];
+    }
 }
 
 
@@ -420,7 +469,16 @@ function update_state_plot(full_update=false) {
     point_vector = state2vector(QMSTATEVECTOR[QMSTATEVECTOR.length-1]);
     new_data = gen_vector_plot(point_vector);
     if (PHOSPHOR_ENABLED === true) {
-        phosphor_length = document.getElementById('phosphor_length').value - 1;
+        // Safely get phosphor length with fallback
+        let phosphor_length = 9; // Default value
+        try {
+            const phosphorElement = document.getElementById('phosphor_length');
+            if (phosphorElement && phosphorElement.value) {
+                phosphor_length = parseInt(phosphorElement.value) - 1;
+            }
+        } catch (error) {
+            console.log("Using default phosphor length");
+        }
         startidx = PHOSPHOR.length-1-phosphor_length;
         if (startidx < 0) {
             startidx = 0;
@@ -451,4 +509,13 @@ function update_state_plot(full_update=false) {
      
 }
 
-
+function toggleFullscreen() {
+    const plotDiv = document.getElementById('blochy-plot');
+    if (!document.fullscreenElement) {
+        plotDiv.requestFullscreen().catch(err => {
+            console.log('Error attempting to enable fullscreen:', err);
+        });
+    } else {
+        document.exitFullscreen();
+    }
+}

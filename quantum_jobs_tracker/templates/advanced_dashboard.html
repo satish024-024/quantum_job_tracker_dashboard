@@ -10,7 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="static/advanced_style.css">
-    <link rel="stylesheet" href="static/3d_circuit_style.css">
+    <link rel="stylesheet" href="static/3d_circuit_style_optimized.css">
+    <link rel="stylesheet" href="static/style.css">
 </head>
 <body class="light-theme">
     <!-- Real Quantum Data Status Indicator -->
@@ -247,7 +248,7 @@
                         </div>
                     </div>
                     <!-- Content -->
-                    <div class="circuit-container" id="circuit-container" style="min-height: 400px; position: relative; display: none;">
+                    <div class="circuit-container" id="circuit-container" style="min-height: 400px; position: relative; display: block;">
                         <div id="3d-quantum-circuit" style="width: 100%; height: 400px; position: relative; overflow: hidden;"></div>
                     </div>
                 </div>
@@ -267,12 +268,12 @@
                     </div>
                 </div>
                 <div class="widget-content">
-                    <div class="loading-screen" id="entanglement-loading" style="display: none;">
+                    <div class="loading-screen" id="entanglement-loading">
                         <div class="loading-spinner"><div class="spinner-ring"></div></div>
                         <div class="loading-text">Calculating Entanglement...</div>
                         <div class="loading-progress"><div class="progress-bar" id="entanglement-progress"></div></div>
                     </div>
-                    <div class="entanglement-visualization" id="entanglement-content">
+                    <div class="entanglement-visualization" id="entanglement-content" style="display: none;">
                         <canvas id="entanglement-canvas" width="300" height="120"></canvas>
                         <div class="entanglement-info">
                             <span class="entanglement-label">Loading...</span>
@@ -299,12 +300,12 @@
                     </div>
                 </div>
                 <div class="widget-content">
-                    <div class="loading-screen" id="results-loading" style="display: none;">
+                    <div class="loading-screen" id="results-loading">
                         <div class="loading-spinner"><div class="spinner-ring"></div></div>
                         <div class="loading-text">Loading Measurement Results...</div>
                         <div class="loading-progress"><div class="progress-bar" id="results-progress"></div></div>
                     </div>
-                    <div class="results-visualization" id="results-content">
+                    <div class="results-visualization" id="results-content" style="display: none;">
                         <canvas id="results-canvas" width="300" height="120"></canvas>
                         <div class="results-info">
                             <span class="results-label">Loading...</span>
@@ -320,10 +321,13 @@
                 <div class="widget-header">
                     <h2><i class="fas fa-globe"></i> 3D Bloch Sphere</h2>
                     <div class="widget-controls">
-                        <button class="widget-btn" data-action="reset-bloch">
+                        <button class="widget-btn" data-action="reset-bloch" id="bloch-reset-btn">
                             <i class="fas fa-home"></i>
                         </button>
-                        <button class="widget-btn" data-action="rotate-bloch">
+                        <button class="widget-btn" data-action="refresh-bloch" id="bloch-refresh-btn">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="widget-btn" data-action="rotate-bloch" id="bloch-rotate-btn">
                             <i class="fas fa-redo"></i>
                         </button>
                         <button class="widget-btn" data-action="expand-bloch" id="expand-bloch-btn">
@@ -337,99 +341,11 @@
                         <div class="loading-spinner">
                             <div class="spinner-ring"></div>
                         </div>
-                        <div class="loading-text">Initializing Bloch Sphere...</div>
-                        <div class="loading-progress">
-                            <div class="progress-bar" id="bloch-progress"></div>
-                        </div>
+                        <div class="loading-text">Initializing 3D Bloch Sphere...</div>
+                        <div class="loading-subtext" id="bloch-loading-status">Loading dependencies...</div>
                     </div>
-                    <!-- Content -->
-                    <div class="bloch-container" id="bloch-container" style="display: none;">
-                        <!-- 3D Bloch Sphere Container -->
-                        <div id="bloch-3d-container" style="width: 100%; height: 300px; position: relative;"></div>
-                        
-                        <!-- Bloch Sphere Diagram -->
-                        <div class="bloch-diagram-container">
-                            <div class="bloch-sphere-diagram" id="bloch-sphere-diagram">
-                                <svg width="300" height="300" viewBox="0 0 300 300" class="bloch-svg">
-                                    <!-- Sphere outline -->
-                                    <circle cx="150" cy="150" r="120" fill="none" stroke="#4dabf7" stroke-width="2" opacity="0.3"/>
-                                    
-                                    <!-- Coordinate axes -->
-                                    <line x1="30" y1="150" x2="270" y2="150" stroke="#ff6b6b" stroke-width="2" opacity="0.6"/>
-                                    <line x1="150" y1="30" x2="150" y2="270" stroke="#51cf66" stroke-width="2" opacity="0.6"/>
-                                    <line x1="90" y1="90" x2="210" y2="210" stroke="#ffd43b" stroke-width="2" opacity="0.6"/>
-                                    
-                                    <!-- Axis labels -->
-                                    <text x="280" y="155" fill="#ff6b6b" font-size="12" font-weight="bold">X</text>
-                                    <text x="155" y="25" fill="#51cf66" font-size="12" font-weight="bold">Y</text>
-                                    <text x="220" y="220" fill="#ffd43b" font-size="12" font-weight="bold">Z</text>
-                                    
-                                    <!-- North and South poles -->
-                                    <circle cx="150" cy="30" r="4" fill="#4dabf7"/>
-                                    <circle cx="150" cy="270" r="4" fill="#4dabf7"/>
-                                    <text x="155" y="35" fill="#4dabf7" font-size="10">|0⟩</text>
-                                    <text x="155" y="275" fill="#4dabf7" font-size="10">|1⟩</text>
-                                    
-                                    <!-- Quantum state vector -->
-                                    <line x1="150" y1="150" x2="200" y2="100" stroke="#1a237e" stroke-width="3" marker-end="url(#arrowhead)"/>
-                                    <circle cx="200" cy="100" r="3" fill="#1a237e"/>
-                                    
-                                    <!-- Arrow marker definition -->
-                                    <defs>
-                                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                                            <polygon points="0 0, 10 3.5, 0 7" fill="#1a237e"/>
-                                        </marker>
-                                    </defs>
-                                    
-                                    <!-- Grid lines for better visualization -->
-                                    <circle cx="150" cy="150" r="60" fill="none" stroke="#4dabf7" stroke-width="1" opacity="0.2"/>
-                                    <circle cx="150" cy="150" r="90" fill="none" stroke="#4dabf7" stroke-width="1" opacity="0.2"/>
-                                </svg>
-                            </div>
-                        </div>
-                        
-                        <!-- Quantum State Info -->
-                        <div class="bloch-info" id="bloch-info">
-                            <div class="quantum-state">
-                                <span class="state-equation">Loading...</span>
-                            </div>
-                            <div class="state-details">
-                                <div class="detail-item">
-                                    <span class="label">θ:</span>
-                                    <span class="value">-</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">φ:</span>
-                                    <span class="value">-</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Fidelity:</span>
-                                    <span class="value">-</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Simple Controls -->
-                        <div class="bloch-simple-controls">
-                            <div class="control-group">
-                                <h4>Quantum Gates</h4>
-                                <div class="gate-buttons">
-                                    <button class="gate-btn" data-action="hadamard">H</button>
-                                    <button class="gate-btn" data-action="pauli-x">X</button>
-                                    <button class="gate-btn" data-action="pauli-y">Y</button>
-                                    <button class="gate-btn" data-action="pauli-z">Z</button>
-                                </div>
-                            </div>
-                            <div class="control-group">
-                                <h4>State</h4>
-                                <div class="state-buttons">
-                                    <button class="gate-btn" data-action="reset-state">|0⟩</button>
-                                    <button class="gate-btn" data-action="set-plus">|+⟩</button>
-                                    <button class="gate-btn" data-action="set-minus">|-⟩</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- New Blochy Widget Container -->
+                    <div id="blochy-container" style="min-height: 400px; position: relative; display: block; border: 1px solid rgba(0,188,212,0.3); border-radius: 4px; background: rgba(0,0,0,0.1);"></div>
                 </div>
             </div>
 
@@ -547,19 +463,30 @@
 
     <!-- Scroll indicators removed -->
 
-    <!-- Scripts -->
+    <!-- Scripts - Load in correct dependency order -->
+    <!-- Load core libraries first (without defer for immediate availability) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="static/plotly-2.16.1.min.js"></script>
+    <script src="static/plotly-gl3d-2.16.1.min.js"></script>
+
+    <!-- Other libraries can be deferred -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+
+    <!-- Math.js library required by original Blochy -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.2.1/math.js" integrity="sha512-47N5yVdAeXJ+9qstVMTH2Z0EpX618sjYZcswRwhpldSTD0IbW6yQPtzg4RLrPp/2+TIgEF1elT68/ZBu82nqJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
-    <!-- Math.js for quantum calculations -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
-    
-    <!-- Plotly.js for 3D Bloch sphere -->
-    <script src="static/plotly-2.16.1.min.js" defer></script>
-    
-    <!-- Bloch sphere implementation from https://github.com/kherb27/Blochy.git -->
-    <script src="static/bloch_quantum.js"></script>
-    <script src="static/bloch_plot.js"></script>
+    <!-- Original Blochy implementation -->
+    <script src="static/helper.js"></script>
+    <script src="static/quantum.js"></script>
+    <script src="static/plot.js"></script>
+    <script src="static/ui.js"></script>
+
+    <!-- Bloch sphere diagnostic script -->
+    <script src="static/bloch_diagnostic.js"></script>
+
+    <!-- Quick Bloch test functions -->
+    <script src="static/bloch_quick_test.js"></script>
     
     <!-- Full-Screen Bloch Sphere Overlay -->
     <div id="fullscreen-bloch-overlay" class="fullscreen-bloch-overlay" style="display: none;">
@@ -569,11 +496,17 @@
                 <h1>3D Bloch Sphere</h1>
             </div>
             <div class="fullscreen-bloch-controls">
-                <button class="fullscreen-btn" data-action="reset-bloch-view">
+                <button class="fullscreen-btn" data-action="reset-bloch-view" id="fullscreen-reset-btn">
                     <i class="fas fa-home"></i>
+                    <span class="btn-tooltip">Reset View</span>
                 </button>
-                <button class="fullscreen-btn" data-action="toggle-fullscreen-bloch">
+                <button class="fullscreen-btn" data-action="refresh-bloch-view" id="fullscreen-refresh-btn">
+                    <i class="fas fa-sync-alt"></i>
+                    <span class="btn-tooltip">Refresh</span>
+                </button>
+                <button class="fullscreen-btn" data-action="toggle-fullscreen-bloch" id="fullscreen-close-btn">
                     <i class="fas fa-compress-arrows-alt"></i>
+                    <span class="btn-tooltip">Exit Fullscreen</span>
                 </button>
             </div>
         </div>
@@ -686,14 +619,14 @@
     </div>
 
     <!-- Bloch Sphere JavaScript Files - Load in correct dependency order -->
-    <script src="static/plotly-gl3d-2.16.1.min.js"></script>
-    <script src="static/3d_quantum_circuit.js"></script>
-    <script src="static/bloch_quantum.js"></script>
-    <script src="static/bloch_plot.js"></script>
-    <script src="static/bloch_ui.js"></script>
+
+    <script src="static/3d_quantum_circuit_optimized.js"></script>
     
     <!-- Main dashboard script - loaded last -->
     <script src="static/advanced_script.js"></script>
+    
+    <!-- Debug Script -->
+    <script src="static/widget_debug.js"></script>
     
     <script>
         // Add keyboard shortcut for fullscreen toggle (ESC key)
@@ -701,7 +634,9 @@
             if (event.key === 'Escape') {
                 const overlay = document.getElementById('fullscreen-bloch-overlay');
                 if (overlay && overlay.style.display !== 'none') {
-                    toggleFullscreenBloch();
+                    if (typeof toggleFullscreenBloch === 'function') {
+                        toggleFullscreenBloch();
+                    }
                 }
             }
         });
@@ -709,61 +644,588 @@
     
     <!-- Initialize Dashboard and Loading System -->
     <script>
-        // Initialize dashboard instance
+        // Global variables
         let dashboard;
-        
+        let blochWidget;
+        let blochIntegration;
+
         // Wait for all scripts to load
         window.addEventListener('load', function() {
             console.log('🚀 Window loaded, initializing dashboard...');
-            
-            // Check if QuantumDashboard class is available
-            if (typeof QuantumDashboard === 'undefined') {
-                console.error('❌ QuantumDashboard class not available');
+
+            // Check URL for debug mode
+            const urlParams = new URLSearchParams(window.location.search);
+            window.debugMode = urlParams.get('debug') === 'true';
+
+            if (window.debugMode) {
+                console.log('🐛 Debug mode enabled');
+                document.body.style.border = '2px solid #ff6b6b';
+            }
+
+            // Log script loading status
+            console.log('📊 Script loading status:', {
+                math: typeof math,
+                Plotly: typeof Plotly,
+                gen_state: typeof gen_state,
+                gen_bloch_sphere: typeof gen_bloch_sphere,
+                init_plotting: typeof init_plotting,
+                window_BLOCHSPHERE: typeof window.BLOCHSPHERE,
+                window_QMSTATEVECTOR: typeof window.QMSTATEVECTOR
+            });
+
+            // Initialize dashboard
+            initializeDashboard();
+
+            // Initialize Bloch sphere with proper timing - wait longer for scripts to load
+            setTimeout(() => {
+                console.log('🎯 Starting Bloch sphere initialization...');
+                initializeBlochSphere();
+            }, 3000);
+
+            // Initialize other components with shorter delay
+            setTimeout(() => {
+                initializeOtherComponents();
+            }, 1000);
+        });
+
+        function initializeDashboard() {
+            if (typeof QuantumDashboard !== 'undefined') {
+                try {
+                    dashboard = new QuantumDashboard();
+                    console.log('✅ Dashboard initialized successfully');
+                } catch (error) {
+                    console.error('❌ Error initializing dashboard:', error);
+                }
+            } else {
+                console.warn('⚠️ QuantumDashboard not available');
+            }
+        }
+
+        function initializeBlochSphere() {
+            console.log('🚀 Initializing Bloch Sphere...');
+
+            // Check dependencies with retries
+            function updateLoadingStatus(status) {
+                const statusEl = document.getElementById('bloch-loading-status');
+                if (statusEl) statusEl.textContent = status;
+            }
+
+            // Check if original Blochy is loaded (check global variables and required functions)
+            const blochVarsAvailable = typeof window.BLOCHSPHERE !== 'undefined' &&
+                                     typeof window.QMSTATEVECTOR !== 'undefined' &&
+                                     typeof window.STATEARROW !== 'undefined';
+
+            const blochFunctionsAvailable = typeof init_plotting === 'function' &&
+                                           typeof gen_bloch_sphere === 'function' &&
+                                           typeof state2vector === 'function';
+
+            if (!blochVarsAvailable || !blochFunctionsAvailable) {
+                console.error('❌ Original Blochy dependencies not available - retrying...');
+                console.log('🔍 Checking availability:', {
+                    vars: blochVarsAvailable,
+                    functions: blochFunctionsAvailable,
+                    BLOCHSPHERE: typeof window.BLOCHSPHERE,
+                    QMSTATEVECTOR: typeof window.QMSTATEVECTOR,
+                    init_plotting: typeof init_plotting,
+                    gen_bloch_sphere: typeof gen_bloch_sphere
+                });
+
+                // Try to manually initialize Blochy if functions are available but vars aren't
+                if (blochFunctionsAvailable && !blochVarsAvailable) {
+                    console.log('🔄 Attempting manual Blochy initialization...');
+                    try {
+                        if (typeof gen_state === 'function' && typeof gen_bloch_sphere === 'function' && typeof state2vector === 'function' && typeof gen_vector_plot === 'function') {
+                            window.QMSTATEVECTOR = [gen_state(true)];
+                            window.BLOCHSPHERE = gen_bloch_sphere();
+                            window.STATEARROW = gen_vector_plot(state2vector(window.QMSTATEVECTOR[window.QMSTATEVECTOR.length-1]));
+                            window.PHOSPHOR = [];
+                            window.PHOSPHOR_ENABLED = true;
+                            console.log('✅ Manual Blochy initialization successful');
+                            // Continue with initialization
+                        } else {
+                            console.error('❌ Required functions not available for manual initialization');
+                            updateLoadingStatus('Waiting for Bloch sphere...');
+                            setTimeout(() => initializeBlochSphere(), 500);
+                            return;
+                        }
+                    } catch (error) {
+                        console.error('❌ Manual initialization failed:', error);
+                        updateLoadingStatus('Waiting for Bloch sphere...');
+                        setTimeout(() => initializeBlochSphere(), 500);
+                        return;
+                    }
+                } else {
+                    updateLoadingStatus('Waiting for Bloch sphere...');
+                    setTimeout(() => initializeBlochSphere(), 500);
+                    return;
+                }
+            }
+
+            if (typeof Plotly === 'undefined') {
+                console.error('❌ Plotly.js not loaded - retrying...');
+                updateLoadingStatus('Waiting for Plotly...');
+                setTimeout(() => initializeBlochSphere(), 500);
                 return;
             }
-            
-            // Initialize the main dashboard
+
+            if (typeof math === 'undefined') {
+                console.error('❌ Math.js not loaded - retrying...');
+                updateLoadingStatus('Waiting for Math.js...');
+                setTimeout(() => initializeBlochSphere(), 500);
+                return;
+            }
+
+            updateLoadingStatus('All dependencies loaded');
+            console.log('✅ All dependencies loaded');
+
             try {
-                dashboard = new QuantumDashboard();
-                console.log('✅ Dashboard initialized successfully');
+                // Initialize the original Bloch sphere
+                console.log('🎯 Initializing original Bloch sphere...');
+
+                // Ensure the container is ready
+                const container = document.getElementById('blochy-container');
+                if (container) {
+                    // Create the plotly div for the original Bloch sphere
+                    container.innerHTML = '<div id="myDiv" class="card" style="width: 100%; height: 100%; position: relative;"></div>';
+
+                    // Wait for DOM update then initialize
+                    setTimeout(() => {
+                        if (typeof initializeBlochSphereDashboard === 'function') {
+                            console.log('🔄 Using dashboard initialization...');
+                            initializeBlochSphereDashboard();
+                        } else if (typeof initializeBlochyContainer === 'function') {
+                            console.log('🔄 Using container initialization...');
+                            initializeBlochyContainer();
+                        } else {
+                            // Fallback initialization
+                            console.log('🔄 Using fallback Bloch initialization...');
+                            const myDiv = document.getElementById('myDiv');
+                            if (myDiv && typeof init_plotting === 'function') {
+                                init_plotting(window.BLOCHSPHERE.concat(window.STATEARROW).concat(window.PHOSPHOR));
+                            }
+                        }
+                        console.log('✅ Original Bloch sphere initialized');
+                    }, 200);
+                }
+
+                // Setup button event listeners
+                setupBlochButtonListeners();
+
+                // Hide loading and show content
+                setTimeout(() => {
+                    const loadingEl = document.getElementById('bloch-loading');
+                    const containerEl = document.getElementById('blochy-container');
+
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    if (containerEl) containerEl.style.display = 'block';
+
+                    console.log('✅ Bloch sphere initialization complete');
+
+                }, 500);
+
             } catch (error) {
-                console.error('❌ Error initializing dashboard:', error);
-                return;
+                console.error('❌ Error initializing Bloch sphere:', error);
+                showBlochError('Failed to initialize Bloch sphere: ' + error.message);
+
+                // Add retry button
+                const container = document.getElementById('blochy-container');
+                if (container) {
+                    const retryBtn = document.createElement('button');
+                    retryBtn.innerHTML = '🔄 Retry Initialization';
+                    retryBtn.style.cssText = 'margin: 10px; padding: 10px; background: #00bcd4; color: white; border: none; border-radius: 5px; cursor: pointer;';
+                    retryBtn.onclick = () => {
+                        location.reload();
+                    };
+                    container.appendChild(retryBtn);
+                }
             }
-            
-            // Initialize 3D Quantum Circuit
+        }
+
+        function setupBlochButtonListeners() {
+            // Reset button
+            const resetBtn = document.getElementById('bloch-reset-btn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    if (blochWidget) {
+                        blochWidget.resetBlochState();
+                    } else if (blochIntegration) {
+                        blochIntegration.resetBlochSphere();
+                    }
+                });
+            }
+
+            // Refresh button
+            const refreshBtn = document.getElementById('bloch-refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    if (blochWidget) {
+                        blochWidget.renderBlochSphere();
+                    }
+                });
+            }
+
+            // Rotate button
+            const rotateBtn = document.getElementById('bloch-rotate-btn');
+            if (rotateBtn) {
+                rotateBtn.addEventListener('click', () => {
+                    if (blochWidget) {
+                        blochWidget.toggleAutoRotate();
+                    } else if (blochIntegration) {
+                        blochIntegration.toggleAutoRotate();
+                    }
+                });
+            }
+
+            // Expand button - Fixed implementation
+            const expandBtn = document.getElementById('expand-bloch-btn');
+            if (expandBtn) {
+                // Remove any existing listeners first
+                expandBtn.replaceWith(expandBtn.cloneNode(true));
+                const newExpandBtn = document.getElementById('expand-bloch-btn');
+
+                newExpandBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎯 Expand Bloch button clicked');
+
+                    // Try optimized version first
+                    if (blochWidget && typeof blochWidget.showOptimizedFullscreen === 'function') {
+                        console.log('🚀 Using optimized fullscreen');
+                        blochWidget.showOptimizedFullscreen();
+                    } else if (blochIntegration && typeof blochIntegration.showFullscreenBloch === 'function') {
+                        console.log('🚀 Using integration fullscreen');
+                        blochIntegration.showFullscreenBloch();
+                    } else if (typeof toggleFullscreenBloch === 'function') {
+                        console.log('🚀 Using global toggle function');
+                        toggleFullscreenBloch();
+                    } else {
+                        // Fallback: create a simple fullscreen overlay
+                        console.log('🚀 Using fallback fullscreen');
+                        showFallbackFullscreenBloch();
+                    }
+                });
+                console.log('✅ Expand button listener attached');
+            } else {
+                console.warn('⚠️ Expand button not found');
+            }
+        }
+
+        function initializeOtherComponents() {
+            // Initialize 3D Quantum Circuit if available
             if (typeof init3DQuantumCircuit === 'function') {
-                console.log('🚀 Initializing 3D Quantum Circuit...');
                 try {
                     init3DQuantumCircuit();
+                    const loadingEl = document.getElementById('circuit-loading');
+                    const containerEl = document.getElementById('circuit-container');
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    if (containerEl) containerEl.style.display = 'block';
+                    console.log('✅ 3D Quantum Circuit initialized');
                 } catch (error) {
                     console.error('❌ Error initializing 3D Quantum Circuit:', error);
                 }
-            } else {
-                console.warn('⚠️ init3DQuantumCircuit function not available');
             }
-            
-            // Initialize Bloch sphere
-            if (typeof init_bloch_sphere === 'function') {
-                console.log('🚀 Initializing Bloch sphere...');
+        }
+
+        function showBlochError(message) {
+            const container = document.getElementById('blochy-container');
+            const loadingEl = document.getElementById('bloch-loading');
+
+            if (loadingEl) loadingEl.style.display = 'none';
+
+            if (container) {
+                container.style.display = 'block';
+                container.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; color: #ff6b6b; text-align: center; padding: 2rem; background: rgba(255, 107, 107, 0.1); border-radius: 8px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <h3>Bloch Sphere Error</h3>
+                        <p>${message}</p>
+                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ff6b6b; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-refresh"></i> Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Fallback fullscreen Bloch sphere function
+        function showFallbackFullscreenBloch() {
+            console.log('🚀 Creating fallback fullscreen Bloch sphere...');
+
+            // Create fullscreen overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'fallback-fullscreen-bloch';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10000;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: white;
+            `;
+
+            overlay.innerHTML = `
+                <div style="position: absolute; top: 20px; right: 20px;">
+                    <button id="close-fallback-fullscreen" style="background: #ff6b6b; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px;">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                </div>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h1 style="color: #00bcd4; margin-bottom: 10px;">3D Bloch Sphere</h1>
+                    <p>Interactive Quantum State Visualization</p>
+                </div>
+                <div id="fallback-bloch-container" style="width: 80%; height: 70%; max-width: 800px; max-height: 600px;"></div>
+            `;
+
+            document.body.appendChild(overlay);
+
+            // Close button functionality
+            const closeBtn = document.getElementById('close-fallback-fullscreen');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    overlay.remove();
+                });
+            }
+
+            // Keyboard support
+            document.addEventListener('keydown', function closeOnEscape(e) {
+                if (e.key === 'Escape') {
+                    overlay.remove();
+                    document.removeEventListener('keydown', closeOnEscape);
+                }
+            });
+
+            // Try to initialize Bloch sphere in fullscreen
+            setTimeout(() => {
+                const container = document.getElementById('fallback-bloch-container');
+                if (container && typeof Plotly !== 'undefined' && typeof window.BLOCHSPHERE !== 'undefined') {
+                    container.innerHTML = '<div id="fullscreen-myDiv" style="width: 100%; height: 100%;"></div>';
+
+                    setTimeout(() => {
+                        const plotDiv = document.getElementById('fullscreen-myDiv');
+                        if (plotDiv) {
+                            // Create a larger layout for fullscreen
+                            const fullscreenLayout = {
+                                hovermode: 'closest',
+                                scene: {
+                                    xaxis: {
+                                        showspikes: false,
+                                        showgrid: false,
+                                        zeroline: false,
+                                        showline: false,
+                                        visible: false,
+                                        ticks: '',
+                                        showticklabels: false,
+                                        range: [-1.1,1.1]
+                                    },
+                                    yaxis: {
+                                        showspikes: false,
+                                        showgrid: false,
+                                        zeroline: false,
+                                        showline: false,
+                                        visible: false,
+                                        ticks: '',
+                                        showticklabels: false,
+                                        range: [-1.1,1.1]
+                                    },
+                                    zaxis: {
+                                        showspikes: false,
+                                        showgrid: false,
+                                        zeroline: false,
+                                        showline: false,
+                                        visible: false,
+                                        ticks: '',
+                                        showticklabels: false,
+                                        range: [-1.1,1.1]
+                                    },
+                                    camera: {
+                                        center: { x:0, y:0, z:0 },
+                                        eye: { x:-0.8, y:1.2, z:0.8 },
+                                        projection: 'perspective'
+                                    }
+                                },
+                                showlegend: false,
+                                margin: { l: 0, r: 0, t: 0, b: 0 },
+                                height: 600,
+                                paper_bgcolor: 'rgba(0,0,0,0)',
+                                plot_bgcolor: 'rgba(0,0,0,0)'
+                            };
+
+                            Plotly.newPlot(plotDiv, window.BLOCHSPHERE.concat(window.STATEARROW).concat(window.PHOSPHOR), fullscreenLayout, {
+                                responsive: true,
+                                displayModeBar: true,
+                                displaylogo: false
+                            });
+
+                            console.log('✅ Fallback fullscreen Bloch sphere rendered');
+                        }
+                    }, 100);
+                } else {
+                    // Show error if dependencies not available
+                    container.innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #ff6b6b;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; margin-bottom: 1rem;"></i>
+                            <h3>Unable to Load Bloch Sphere</h3>
+                            <p>3D visualization dependencies not available</p>
+                        </div>
+                    `;
+                }
+            }, 200);
+        }
+
+        // Global functions for compatibility
+        window.resetBlochSphere = function() {
+            if (blochWidget) {
+                blochWidget.resetBlochState();
+            } else if (blochIntegration) {
+                blochIntegration.resetBlochSphere();
+            }
+        };
+
+        window.refreshBlochSphere = function() {
+            if (blochWidget) {
+                blochWidget.renderBlochSphere();
+            }
+        };
+
+        // Test functions for debugging
+        setTimeout(() => {
+            if (typeof runBlochSphereTests === 'function') {
+                console.log('🧪 Running Bloch sphere tests...');
+                runBlochSphereTests();
+            }
+
+            // Additional tests
+            setTimeout(() => {
+                if (typeof testBlochWidgetInitialization === 'function') {
+                    testBlochWidgetInitialization();
+                }
+                if (typeof testButtonFunctionality === 'function') {
+                    testButtonFunctionality();
+                }
+            }, 1000);
+        }, 3000);
+
+        // Additional Bloch sphere test
+        setTimeout(() => {
+            console.log('🧪 Running comprehensive Bloch sphere test...');
+            testBlochSphereComplete();
+        }, 4000);
+
+        function testBlochSphereComplete() {
+            const results = {
+                container: false,
+                myDiv: false,
+                globalVars: false,
+                plotly: false,
+                math: false,
+                initPlotting: false,
+                expandBtn: false
+            };
+
+            // Test container
+            const container = document.getElementById('blochy-container');
+            results.container = container !== null;
+
+            // Test myDiv
+            const myDiv = document.getElementById('myDiv');
+            results.myDiv = myDiv !== null;
+
+            // Test global variables
+            results.globalVars = typeof window.BLOCHSPHERE !== 'undefined' &&
+                                typeof window.QMSTATEVECTOR !== 'undefined' &&
+                                typeof window.STATEARROW !== 'undefined';
+
+            // Test dependencies
+            results.plotly = typeof Plotly !== 'undefined';
+            results.math = typeof math !== 'undefined';
+            results.initPlotting = typeof init_plotting === 'function';
+
+            // Test expand button
+            const expandBtn = document.getElementById('expand-bloch-btn');
+            results.expandBtn = expandBtn !== null;
+
+            console.log('🧪 Bloch sphere test results:', results);
+
+            const allPassed = Object.values(results).every(result => result === true);
+            if (allPassed) {
+                console.log('✅ All Bloch sphere tests passed!');
+            } else {
+                console.warn('⚠️ Some Bloch sphere tests failed:', results);
+            }
+
+            return results;
+        }
+
+        // Make test function globally available
+        window.testBlochSphereComplete = testBlochSphereComplete;
+
+        // Force initialization function for debugging
+        window.forceBlochInitialization = function() {
+            console.log('🔧 Force initializing Bloch sphere...');
+
+            // Check current status
+            const status = testBlochSphereComplete();
+            console.log('📊 Current status:', status);
+
+            // If not all tests pass, try manual initialization
+            if (!status.allPassed) {
+                console.log('🔄 Attempting force initialization...');
+
                 try {
-                    init_bloch_sphere();
+                    // Manual initialization of missing components
+                    if (typeof math !== 'undefined' && typeof gen_state === 'function') {
+                        if (typeof window.BLOCHSPHERE === 'undefined') {
+                            console.log('📝 Creating BLOCHSPHERE...');
+                            window.QMSTATEVECTOR = [gen_state(true)];
+                            window.BLOCHSPHERE = gen_bloch_sphere();
+                            window.STATEARROW = gen_vector_plot(state2vector(window.QMSTATEVECTOR[window.QMSTATEVECTOR.length-1]));
+                            window.PHOSPHOR = [];
+                            window.PHOSPHOR_ENABLED = true;
+                        }
+
+                        // Try to initialize
+                        const container = document.getElementById('blochy-container');
+                        if (container && typeof init_plotting === 'function') {
+                            console.log('🎨 Force rendering Bloch sphere...');
+                            container.innerHTML = '<div id="myDiv" class="card" style="width: 100%; height: 100%; position: relative;"></div>';
+
+                            setTimeout(() => {
+                                init_plotting(window.BLOCHSPHERE.concat(window.STATEARROW).concat(window.PHOSPHOR));
+
+                                // Hide loading and show content
+                                const loadingEl = document.getElementById('bloch-loading');
+                                const containerEl = document.getElementById('blochy-container');
+
+                                if (loadingEl) loadingEl.style.display = 'none';
+                                if (containerEl) containerEl.style.display = 'block';
+
+                                console.log('✅ Force initialization completed');
+                            }, 200);
+                        }
+                    } else {
+                        console.error('❌ Cannot force initialize - math or gen_state not available');
+                    }
                 } catch (error) {
-                    console.error('❌ Error initializing Bloch sphere:', error);
+                    console.error('❌ Force initialization failed:', error);
                 }
             } else {
-                console.warn('⚠️ init_bloch_sphere function not available');
+                console.log('✅ All components already available');
             }
-            
-            // Force Bloch sphere diagram rendering as fallback
-            if (typeof createSimpleBlochSphere === 'function') {
-                try {
-                    createSimpleBlochSphere();
-                } catch (error) {
-                    console.error('❌ Error creating fallback Bloch sphere:', error);
-                }
+        };
+
+        // Auto-force initialization after a delay if needed
+        setTimeout(() => {
+            if (typeof window.BLOCHSPHERE === 'undefined' && typeof gen_state === 'function') {
+                console.log('🔄 Auto-attempting force initialization...');
+                window.forceBlochInitialization();
             }
-        });
+        }, 5000);
     </script>
     
 </body>
