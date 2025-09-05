@@ -526,6 +526,74 @@ html, body {
     min-height: var(--widget-min-height);
 }
 
+/* Real Data Indicators */
+.real-data-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.5rem;
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid var(--accent-green);
+    border-radius: var(--radius-sm);
+    color: var(--accent-green);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.real-data-indicator i {
+    color: var(--accent-green);
+}
+
+/* No Real Data Messages */
+.no-real-data-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+}
+
+.no-real-data-message i {
+    font-size: 2rem;
+    color: var(--warning);
+    margin-bottom: 1rem;
+}
+
+.no-real-data-message p {
+    margin: 0.5rem 0;
+}
+
+.real-data-note {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Real Data Error */
+.real-data-error {
+    background: rgba(255, 71, 87, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.real-data-error .error-content i {
+    font-size: 2rem;
+    color: var(--danger);
+    margin-bottom: 1rem;
+}
+
+.real-data-error .error-content h3 {
+    color: var(--danger);
+    margin: 0 0 1rem 0;
+}
+
+.real-data-error .error-content p {
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+}
+
 @keyframes widgetSlideIn {
     0% {
         opacity: 0;
