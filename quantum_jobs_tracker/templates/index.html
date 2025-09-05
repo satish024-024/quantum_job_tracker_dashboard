@@ -3,105 +3,1023 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Jobs Tracker</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Quantum Spark - Main Dashboard</title>
+    
+    <!-- Professional Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Plotly for 3D visualizations -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    
+    <!-- Sortable.js for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <!-- Google Gemini AI -->
+    <script src="https://unpkg.com/@google/generative-ai@0.1.3/dist/index.js"></script>
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --ocean-gradient: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%);
+            --default-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+            --success-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --warning-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+            --danger-gradient: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            --background-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            --surface-gradient: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-accent: #06b6d4;
+            --shadow-glow: 0 0 20px rgba(6, 182, 212, 0.3);
+            --shadow-deep: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --border-radius: 12px;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --font-display: 'Orbitron', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--background-gradient);
+        }
+
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        /* Header */
+        .header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--default-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--default-gradient);
+            color: white;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: var(--glass-border);
+            transform: translateY(-2px);
+        }
+
+        /* AI Panel */
+        .ai-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin: 2rem;
+            box-shadow: var(--shadow-deep);
+        }
+
+        .ai-panel h3 {
+            margin-bottom: 1rem;
+            color: var(--text-accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .ai-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .ai-input:focus {
+            outline: none;
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem;
+        }
+
+        .metric-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--default-gradient);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-accent);
+            font-family: var(--font-display);
+        }
+
+        /* Widget Grid */
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin: 2rem;
+            padding: 1rem;
+        }
+
+        .widget {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .widget:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .widget-header {
+            background: var(--default-gradient);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-title {
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .widget-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .widget-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .widget-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .widget-content {
+            padding: 1.5rem;
+            min-height: 200px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--glass-border);
+            border-top: 2px solid var(--text-accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Popup Modal */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-modal {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .popup-overlay.active .popup-modal {
+            transform: scale(1);
+        }
+
+        .popup-header {
+            background: var(--default-gradient);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-title {
+            color: white;
+            font-weight: 600;
+        }
+
+        .popup-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .popup-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .popup-content {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* Customization Panel */
+        .customization-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid var(--glass-border);
+            padding: 2rem;
+            transition: right 0.3s ease;
+            z-index: 200;
+            overflow-y: auto;
+        }
+
+        .customization-panel.active {
+            right: 0;
+        }
+
+        .customization-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .customization-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-accent);
+        }
+
+        .widget-list {
+            list-style: none;
+        }
+
+        .widget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease;
+        }
+
+        .widget-item:hover {
+            background: var(--glass-border);
+        }
+
+        .widget-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .widget-name {
+            font-weight: 500;
+        }
+
+        .add-widget-btn {
+            padding: 0.5rem 1rem;
+            background: var(--default-gradient);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .add-widget-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+            
+            .widget-grid {
+                grid-template-columns: 1fr;
+                margin: 1rem;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                margin: 1rem;
+            }
+            
+            .customization-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        /* Notification System */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--shadow-deep);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.success {
+            border-left: 4px solid #10b981;
+        }
+
+        .notification.error {
+            border-left: 4px solid #ef4444;
+        }
+
+        .notification.warning {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .notification.info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        .notification-close {
+            float: right;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: color 0.2s ease;
+        }
+
+        .notification-close:hover {
+            color: var(--text-primary);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
 </head>
 <body>
-    <div class="quantum-container">
-        <header>
-            <h1>Quantum Jobs Tracker</h1>
-            <p class="quantum-subtitle">Tracking IBM Quantum Computing jobs with quantum-native visualization</p>
-        </header>
-
-        <div class="dashboard">
-            <div class="section backends">
-                <h2>Quantum Backends</h2>
-                <div class="quantum-grid" id="backends-container">
-                    <div class="loading">Loading quantum backend data...</div>
-                </div>
-            </div>
-
-            <div class="section jobs">
-                <h2>Active Quantum Jobs</h2>
-                <div class="quantum-table-container">
-                    <table class="quantum-table" id="jobs-table">
-                        <thead>
-                            <tr>
-                                <th>Job ID</th>
-                                <th>Backend</th>
-                                <th>Status</th>
-                                <th>Qubits</th>
-                                <th>Start Time</th>
-                                <th>Est. Completion</th>
-                            </tr>
-                        </thead>
-                        <tbody id="jobs-body">
-                            <tr>
-                                <td colspan="6" class="loading">Loading quantum jobs data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="section qubit-state">
-                <h2>Quantum System State</h2>
-                <div class="quantum-visualization">
-                    <div class="visualization-container">
-                        <div class="visualization-panel">
-                            <h3>State Histogram</h3>
-                            <div id="histogram-visualization">
-                                <div class="loading">Loading quantum state...</div>
-                            </div>
-                        </div>
-                        <div class="visualization-panel">
-                            <h3>Bloch Sphere</h3>
-                            <div id="bloch-visualization">
-                                <div class="loading">Loading quantum state...</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="quantum-stats">
-                        <div id="qubit-stats">
-                            <div class="stat">
-                                <span class="label">Total Backends:</span>
-                                <span class="value" id="total-backends">0</span>
-                            </div>
-                            <div class="stat">
-                                <span class="label">Active Backends:</span>
-                                <span class="value" id="active-backends">0</span>
-                            </div>
-                            <div class="stat">
-                                <span class="label">Running Jobs:</span>
-                                <span class="value" id="running-jobs">0</span>
-                            </div>
-                            <div class="stat">
-                                <span class="label">Queued Jobs:</span>
-                                <span class="value" id="queued-jobs">0</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section quantum-circuit">
-                <h2>Quantum Circuit Representation</h2>
-                <div id="quantum-circuit-visualization">
-                    <canvas id="superposition-canvas"></canvas>
-                </div>
-                <p class="circuit-explanation">
-                    This quantum circuit represents the current state of the quantum computing system.
-                    Each qubit encodes information about backend availability and job status.
-                </p>
-            </div>
+    <div class="animated-bg"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">Quantum Spark</div>
         </div>
-        
-        <footer>
-            <p>Quantum Jobs Tracker - Powered by Qiskit</p>
-        </footer>
+        <div class="header-right">
+            <button class="btn btn-secondary" id="customize-btn">
+                <i class="fas fa-cog"></i>
+                Customize
+            </button>
+            <button class="btn btn-primary" id="refresh-all-btn">
+                <i class="fas fa-sync-alt"></i>
+                Refresh All
+            </button>
+        </div>
+    </header>
+
+    <!-- Notification Container -->
+    <div class="notification-container" id="notification-container"></div>
+
+    <!-- AI Panel -->
+    <div class="ai-panel fade-in">
+        <h3><i class="fas fa-robot"></i> AI Assistant</h3>
+        <input type="text" class="ai-input" id="ai-input" placeholder="Ask Gemini AI about quantum states, circuits, or any quantum computing topic...">
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Metrics Grid -->
+    <section class="metrics-grid slide-up">
+        <div class="metric-card">
+            <div class="metric-label">Active Backends</div>
+            <div class="metric-value" id="active-backends">-</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Total Jobs</div>
+            <div class="metric-value" id="total-jobs">-</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Running Jobs</div>
+            <div class="metric-value" id="running-jobs">-</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Success Rate</div>
+            <div class="metric-value" id="success-rate">-</div>
+        </div>
+    </section>
+
+    <!-- Widget Grid -->
+    <div class="widget-grid" id="widget-grid">
+        <!-- Quantum Backends Widget -->
+        <div class="widget fade-in" data-widget="backends">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-server"></i>
+                    Quantum Backends
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="backends-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading quantum backends...
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Jobs Widget -->
+        <div class="widget fade-in" data-widget="jobs">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-tasks"></i>
+                    Quantum Jobs
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="jobs-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading quantum jobs...
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Bloch Sphere Widget -->
+        <div class="widget fade-in" data-widget="bloch-sphere">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-globe"></i>
+                    3D Bloch Sphere
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="bloch-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading 3D Bloch sphere...
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D Quantum Circuit Widget -->
+        <div class="widget fade-in" data-widget="circuit">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-project-diagram"></i>
+                    3D Quantum Circuit
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="circuit-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading 3D quantum circuit...
+                </div>
+            </div>
+        </div>
+
+        <!-- Entanglement Analysis Widget -->
+        <div class="widget fade-in" data-widget="entanglement">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-link"></i>
+                    Entanglement Analysis
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="entanglement-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading entanglement analysis...
+                </div>
+            </div>
+        </div>
+
+        <!-- Measurement Results Widget -->
+        <div class="widget fade-in" data-widget="results">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Measurement Results
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="results-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading measurement results...
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum State Widget -->
+        <div class="widget fade-in" data-widget="quantum-state">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-atom"></i>
+                    Quantum State
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="quantum-state-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading quantum state...
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics Widget -->
+        <div class="widget fade-in" data-widget="performance">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-chart-line"></i>
+                    Performance Metrics
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="performance-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading performance metrics...
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Chat Widget -->
+        <div class="widget fade-in" data-widget="ai-chat">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <i class="fas fa-robot"></i>
+                    AI Assistant
+                </div>
+                <div class="widget-controls">
+                    <button class="widget-btn" data-action="refresh" title="Refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="popup" title="Popup View">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                    <button class="widget-btn" data-action="fullscreen" title="Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="widget-btn" data-action="remove" title="Remove">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="widget-content" id="ai-chat-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading AI chat...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popup Modal -->
+    <div class="popup-overlay" id="popup-overlay">
+        <div class="popup-modal">
+            <div class="popup-header">
+                <div class="popup-title" id="popup-title">Widget</div>
+                <button class="popup-close" id="popup-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="popup-content" id="popup-content">
+                <!-- Popup content will be dynamically loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Customization Panel -->
+    <div class="customization-panel" id="customization-panel">
+        <div class="customization-header">
+            <h3 class="customization-title">Customize Dashboard</h3>
+            <button class="widget-btn" id="close-customization">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="widget-list">
+            <li class="widget-item" data-widget="backends">
+                <div class="widget-info">
+                    <i class="fas fa-server"></i>
+                    <span class="widget-name">Quantum Backends</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="jobs">
+                <div class="widget-info">
+                    <i class="fas fa-tasks"></i>
+                    <span class="widget-name">Quantum Jobs</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="bloch-sphere">
+                <div class="widget-info">
+                    <i class="fas fa-globe"></i>
+                    <span class="widget-name">3D Bloch Sphere</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="circuit">
+                <div class="widget-info">
+                    <i class="fas fa-project-diagram"></i>
+                    <span class="widget-name">3D Quantum Circuit</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="entanglement">
+                <div class="widget-info">
+                    <i class="fas fa-link"></i>
+                    <span class="widget-name">Entanglement Analysis</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="results">
+                <div class="widget-info">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="widget-name">Measurement Results</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="quantum-state">
+                <div class="widget-info">
+                    <i class="fas fa-atom"></i>
+                    <span class="widget-name">Quantum State</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="performance">
+                <div class="widget-info">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="widget-name">Performance Metrics</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+            <li class="widget-item" data-widget="ai-chat">
+                <div class="widget-info">
+                    <i class="fas fa-robot"></i>
+                    <span class="widget-name">AI Assistant</span>
+                </div>
+                <button class="add-widget-btn" data-action="add">Add</button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../blochy-source/quantum.js"></script>
+    <script src="../blochy-source/plot.js"></script>
+    <script src="../blochy-source/ui.js"></script>
+    <script src="../blochy-source/helper.js"></script>
+    
+    <!-- 3D Circuit -->
+    <script src="static/3d_quantum_circuit.js"></script>
+    
+    <!-- Enhanced Bloch Integration -->
+    <script src="static/bloch_quantum.js"></script>
+    <script src="static/bloch_ui.js"></script>
+    
+    <!-- Main Dashboard Script -->
+    <script src="static/index_dashboard.js"></script>
 </body>
 </html>
