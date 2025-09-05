@@ -29,13 +29,22 @@ IBM_CRN = ""
 
 # Check if IBM Quantum packages are available
 try:
-    import qiskit_ibm_provider
     import qiskit_ibm_runtime
+    # Try to import provider, but don't fail if it's not available
+    try:
+        import qiskit_ibm_provider
+        PROVIDER_AVAILABLE = True
+    except:
+        PROVIDER_AVAILABLE = False
     IBM_PACKAGES_AVAILABLE = True
-    print("✅ IBM Quantum packages are available")
-except ImportError:
+    print("✅ IBM Quantum runtime available")
+    if PROVIDER_AVAILABLE:
+        print("✅ IBM Quantum provider available")
+    else:
+        print("⚠️ IBM Quantum provider not available - using runtime only")
+except Exception as e:
     IBM_PACKAGES_AVAILABLE = False
-    print("⚠️ IBM Quantum packages not available - using fallback mode")
+    print(f"❌ IBM Quantum packages not available - using fallback mode: {e}")
 
 class QuantumBackendManager:
     """Manager for IBM Quantum backends with graceful fallback to simulation"""
@@ -105,19 +114,22 @@ class QuantumBackendManager:
                 except Exception as e:
                     print(f"⚠️ IBM Cloud CRN connection failed: {e}")
             
-            # Method 3: Try IBM Quantum Experience as fallback
-            print("🔗 Trying IBM Quantum Experience...")
-            try:
-                import qiskit_ibm_provider
-                print(f"✅ qiskit_ibm_provider version: {qiskit_ibm_provider.__version__}")
-                
-                provider = qiskit_ibm_provider.IBMProvider(token=self.token)
-                self.provider = provider
-                self.is_connected = True
-                print("✅ Connected via IBM Quantum Experience Provider")
-                return
-            except Exception as e:
-                print(f"⚠️ IBM Quantum Experience connection failed: {e}")
+            # Method 3: Try IBM Quantum Experience as fallback (if provider available)
+            if PROVIDER_AVAILABLE:
+                print("🔗 Trying IBM Quantum Experience...")
+                try:
+                    import qiskit_ibm_provider
+                    print(f"✅ qiskit_ibm_provider version: {qiskit_ibm_provider.__version__}")
+
+                    provider = qiskit_ibm_provider.IBMProvider(token=self.token)
+                    self.provider = provider
+                    self.is_connected = True
+                    print("✅ Connected via IBM Quantum Experience Provider")
+                    return
+                except Exception as e:
+                    print(f"⚠️ IBM Quantum Experience connection failed: {e}")
+            else:
+                print("⚠️ IBM Quantum provider not available - skipping provider attempt")
             
             # If all methods fail, raise error - NO SIMULATION FALLBACK
             error_msg = "❌ ALL IBM Quantum connection methods failed. Cannot proceed without real connection."
@@ -133,20 +145,20 @@ class QuantumBackendManager:
         """Get available backends from IBM Quantum"""
         if not self.is_connected:
             return []
-            
+
         try:
             if self.provider:
                 try:
                     # Get backends using the provider
                     backends = self.provider.backends()
-                    
+
                     # Check if we got any backends
                     if backends:
                         print(f"Retrieved {len(backends)} real backends")
                         return backends
                 except Exception as e:
                     print(f"Error retrieving backends with standard method: {e}")
-                    
+
                 # Try alternative methods if the standard one failed
                 try:
                     # Try the get_backends method (older API)
@@ -156,7 +168,7 @@ class QuantumBackendManager:
                         return backends
                 except Exception as e:
                     print(f"Error retrieving backends with get_backends: {e}")
-                    
+
                 # Try list_backends method for IBM Cloud Quantum
                 try:
                     if hasattr(self.provider, 'list_backends'):
@@ -165,9 +177,20 @@ class QuantumBackendManager:
                         return backends
                 except Exception as e:
                     print(f"Error retrieving backends with list_backends: {e}")
-                    
+
+            # If we have runtime service but no provider, try runtime methods
+            elif hasattr(self, 'provider') and self.provider and 'RuntimeService' in str(type(self.provider)):
+                try:
+                    # For runtime service, get backends using runtime API
+                    backends = self.provider.backends()
+                    if backends:
+                        print(f"Retrieved {len(backends)} real backends via runtime")
+                        return backends
+                except Exception as e:
+                    print(f"Error retrieving backends via runtime: {e}")
+
             # If we reach here, we couldn't get backends
-            print("Could not retrieve backends from provider")
+            print("Could not retrieve backends from provider or runtime")
             return []
         except Exception as e:
             print(f"Error retrieving backends: {e}")
@@ -1184,11 +1207,11 @@ def logout():
 
 @app.route('/dashboard')
 def dashboard():
-    """Render professional dashboard if token is set"""
+    """Render hackathon dashboard if token is set"""
     session_id = request.remote_addr
     if session_id not in user_tokens:
         return redirect('/')
-    return render_template('professional_dashboard.html')
+    return render_template('hackathon_dashboard.html')
 
 @app.route('/advanced')
 def advanced_dashboard():

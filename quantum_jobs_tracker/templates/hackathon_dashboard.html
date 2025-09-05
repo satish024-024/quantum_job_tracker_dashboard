@@ -12,7 +12,10 @@
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
+    <!-- Bloch Sphere Styles -->
+    <link rel="stylesheet" href="/static/bloch_sphere/main.css">
+
     <!-- Plotly for 3D visualizations -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     
@@ -367,13 +370,8 @@
         .metric-value {
             font-family: var(--font-display);
             font-size: 2.5rem;
-            font-weight: 900;
-            background: var(--quantum-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 0.5rem 0;
         }
+
 
         .metric-label {
             font-size: 0.875rem;
@@ -466,6 +464,47 @@
             padding: 1.5rem;
             height: calc(100% - 80px);
             overflow: hidden;
+        }
+
+        /* Visualization Container */
+        .visualization-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .visualization-container > div {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+        }
+
+        /* 3D Circuit specific styling */
+        #circuit-3d-plot {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin: 0 auto;
+        }
+
+        .circuit-3d-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .circuit-3d-view {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
         }
 
         /* Popup Modal */
@@ -937,12 +976,12 @@
                 </div>
             </div>
 
-            <!-- 3D Bloch Sphere Widget (Blochy Integration) -->
+            <!-- 3D Bloch Sphere Widget (Advanced Implementation) -->
             <div class="widget fade-in" data-widget="bloch-sphere">
                 <div class="widget-header">
                     <h3 class="widget-title">
                         <i class="fas fa-globe"></i>
-                        3D Bloch Sphere (Blochy)
+                        3D Bloch Sphere (Advanced)
                     </h3>
                     <div class="widget-controls">
                         <button class="widget-btn" data-action="refresh" title="Refresh">
@@ -962,11 +1001,90 @@
                 <div class="widget-content">
                     <div class="loading" id="bloch-loading">
                         <div class="spinner"></div>
-                        <span>Loading Blochy sphere...</span>
+                        <span>Loading Advanced Bloch Sphere...</span>
                     </div>
-                    <div class="visualization-container" id="bloch-content" style="display: none;">
-                        <!-- Blochy 3D sphere will be rendered here -->
-                        <div id="bloch-3d-container" style="width: 100%; height: 300px; position: relative;"></div>
+                    <div class="visualization-container" id="bloch-content" style="display: block;">
+                        <div class="bloch-sphere-widget" style="display: flex; height: 500px; background: #000; border-radius: 8px; overflow: hidden;">
+                            <!-- Main Bloch Sphere View -->
+                            <div class="bloch-main-view" style="flex: 1; position: relative; background: #000;">
+                                <div id="bloch-sphere" style="width: 100%; height: 100%; position: relative;"></div>
+                                
+                                <!-- State Display (Bottom Left) -->
+                                <div id="bloch-sphere-state" style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; line-height: 1.4;">
+                                    <div>Theta: <span id="bloch-sphere-state-theta">+0.0000</span></div>
+                                    <div>Phi: <span id="bloch-sphere-state-phi">+90.0000</span></div>
+                                    <div>Alpha: <span id="bloch-sphere-state-alpha">+1.0000</span></div>
+                                    <div>Beta: <span id="bloch-sphere-state-beta">+0.0000 + i * 0.0000</span></div>
+                                    <div style="margin-top: 5px; border-top: 1px solid #333; padding-top: 5px;">
+                                        <div>X: <span id="bloch-sphere-state-x">+0.0000</span></div>
+                                        <div>Y: <span id="bloch-sphere-state-y">+0.0000</span></div>
+                                        <div>Z: <span id="bloch-sphere-state-z">+1.0000</span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Toolbox Sidebar -->
+                            <div class="bloch-toolbox" style="width: 250px; background: #1a1a1a; padding: 15px; overflow-y: auto; border-left: 1px solid #333;">
+                                <h4 style="color: #fff; margin-bottom: 20px; font-family: Arial, sans-serif; font-size: 16px;">Toolbox</h4>
+
+                                <!-- Half-turn Gates -->
+                                <div style="margin-bottom: 20px;">
+                                    <h5 style="color: #fff; margin-bottom: 10px; font-size: 14px;">Half-turn Gates</h5>
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                                        <button class="quantum-gate" id="px-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>x</sub></button>
+                                        <button class="quantum-gate" id="py-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>y</sub></button>
+                                        <button class="quantum-gate" id="pz-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>z</sub></button>
+                                        <button class="quantum-gate" id="h-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">H</button>
+                                    </div>
+                                </div>
+
+                                <!-- Quarter-turn Gates -->
+                                <div style="margin-bottom: 20px;">
+                                    <h5 style="color: #fff; margin-bottom: 10px; font-size: 14px;">Quarter-turn Gates</h5>
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                                        <button class="quantum-gate" id="px-12-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>x</sub><sup>1/2</sup></button>
+                                        <button class="quantum-gate" id="py-12-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>y</sub><sup>1/2</sup></button>
+                                        <button class="quantum-gate" id="pz-12-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>z</sub><sup>1/2</sup></button>
+                                        <button class="quantum-gate" id="pxi-12-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>x</sub><sup>-1/2</sup></button>
+                                        <button class="quantum-gate" id="pyi-12-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>y</sub><sup>-1/2</sup></button>
+                                        <button class="quantum-gate" id="pzi-12-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>z</sub><sup>-1/2</sup></button>
+                                        <button class="quantum-gate" id="s-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">S</button>
+                                        <button class="quantum-gate" id="si-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">S<sup>-1</sup></button>
+                                    </div>
+                                </div>
+
+                                <!-- Eighth-turn Gates -->
+                                <div style="margin-bottom: 20px;">
+                                    <h5 style="color: #fff; margin-bottom: 10px; font-size: 14px;">Eighth-turn Gates</h5>
+                                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                                        <button class="quantum-gate" id="px-14-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>x</sub><sup>1/4</sup></button>
+                                        <button class="quantum-gate" id="py-14-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>y</sub><sup>1/4</sup></button>
+                                        <button class="quantum-gate" id="pz-14-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>z</sub><sup>1/4</sup></button>
+                                        <button class="quantum-gate" id="pxi-14-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>x</sub><sup>-1/4</sup></button>
+                                        <button class="quantum-gate" id="pyi-14-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>y</sub><sup>-1/4</sup></button>
+                                        <button class="quantum-gate" id="pzi-14-builtInGate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">P<sub>z</sub><sup>-1/4</sup></button>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Gates -->
+                                <div style="margin-bottom: 20px;">
+                                    <h5 style="color: #fff; margin-bottom: 10px; font-size: 14px;">Custom Gates</h5>
+                                    <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 5px;">
+                                        <button class="quantum-gate" id="custom-gate" style="background: #3b82f6; color: white; border: none; padding: 8px; border-radius: 3px; font-size: 12px; cursor: pointer;">+</button>
+                                    </div>
+                                </div>
+
+                                <!-- Lambda Gates -->
+                                <div style="margin-bottom: 20px;">
+                                    <h5 style="color: #fff; margin-bottom: 10px; font-size: 14px;">Lambda Gates</h5>
+                                    <div style="margin-bottom: 10px;">
+                                        <label style="color: #fff; font-size: 12px; display: block; margin-bottom: 5px;">Polar angle: <span id="polar-angle-value">0°</span></label>
+                                        <input type="range" id="polar-angle" min="0" max="360" value="0" style="width: 100%; height: 4px; border-radius: 2px; background: #333; outline: none;">
+                                    </div>
+                                    <button id="apply-lambda" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 3px; width: 100%; font-size: 12px; cursor: pointer;">APPLY</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1277,19 +1395,37 @@
     <script src="https://unpkg.com/mathjs@11.11.0/lib/browser/math.min.js"></script>
     
     <!-- Blochy Integration -->
-    <script src="../blochy-source/quantum.js"></script>
-    <script src="../blochy-source/plot.js"></script>
-    <script src="../blochy-source/ui.js"></script>
-    <script src="../blochy-source/helper.js"></script>
+    <script src="/static/quantum.js"></script>
+    <script src="/static/plot.js"></script>
+    <script src="/static/ui.js"></script>
+    <script src="/static/helper.js"></script>
     
     <!-- 3D Circuit -->
-    <script src="static/3d_quantum_circuit.js"></script>
-    
+    <script src="/static/3d_quantum_circuit.js"></script>
+
     <!-- Enhanced Bloch Integration -->
-    <script src="static/bloch_quantum.js"></script>
-    <script src="static/bloch_ui.js"></script>
-    
+    <script src="/static/bloch_quantum.js"></script>
+    <script src="/static/bloch_ui.js"></script>
+
+    <!-- Three.js Scripts -->
+    <script src="/static/bloch_sphere/src/libs/three/three.min.js"></script>
+
+    <!-- Load Three.js Controls -->
+    <script>
+        // Load OrbitControls manually
+        const orbitScript = document.createElement('script');
+        orbitScript.src = '/static/bloch_sphere/src/libs/three/jsm/controls/OrbitControls.js';
+        orbitScript.onload = function() {
+            console.log('✅ OrbitControls loaded');
+            window.OrbitControlsLoaded = true;
+        };
+        orbitScript.onerror = function() {
+            console.error('❌ Failed to load OrbitControls');
+        };
+        document.head.appendChild(orbitScript);
+    </script>
+
     <!-- Main Dashboard Script -->
-    <script src="static/hackathon_dashboard.js"></script>
+    <script src="/static/hackathon_dashboard.js"></script>
 </body>
 </html>

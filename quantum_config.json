@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Quantum Jobs Tracker",
+    "version": "2.0",
+    "description": "Advanced quantum computing job tracker with real-time monitoring"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 10000,
+    "debug": false,
+    "auto_reload": true
+  },
+  "quantum": {
+    "backend": "ibm_quantum",
+    "auto_connect": false,
+    "token_required": true
+  },
+  "features": {
+    "real_time_updates": true,
+    "3d_visualization": true,
+    "customizable_widgets": true,
+    "enhanced_notifications": true
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "quantum_app.log",
+    "console": true
+  }
+}
