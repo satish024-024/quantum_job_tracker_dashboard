@@ -1,6 +1,6 @@
-// Quantum Spark - Professional Dashboard
-// Professional Interactive Dashboard with AI Integration
-class ProfessionalDashboard {
+// Quantum Spark - Modern Dashboard
+// Modern Interactive Dashboard with AI Integration
+class ModernDashboard {
     constructor() {
         this.state = {
             backends: [],
@@ -88,13 +88,13 @@ class ProfessionalDashboard {
         // Add staggered animations to widgets
         const widgets = document.querySelectorAll('.widget');
         widgets.forEach((widget, index) => {
-            widget.style.animationDelay = `${index * 0.1}s`;
+            widget.style.animationDelay = `${index * 0.15}s`;
         });
 
         // Add pulse animation to metrics
         const metrics = document.querySelectorAll('.metric-card');
         metrics.forEach((metric, index) => {
-            metric.style.animationDelay = `${index * 0.2}s`;
+            metric.style.animationDelay = `${index * 0.25}s`;
         });
     }
 
@@ -102,7 +102,7 @@ class ProfessionalDashboard {
         const widgetGrid = document.getElementById('widget-grid');
         if (widgetGrid) {
             this.sortable = new Sortable(widgetGrid, {
-                animation: 300,
+                animation: 400,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
                 dragClass: 'sortable-drag',
@@ -233,7 +233,7 @@ class ProfessionalDashboard {
             await this.fetchDashboardData();
             this.updateMetrics();
             this.updateAllWidgets();
-            this.showNotification('Professional dashboard loaded successfully', 'success');
+            this.showNotification('Modern dashboard loaded successfully', 'success');
         } catch (error) {
             console.error('Error loading initial data:', error);
             this.showNotification('Failed to load dashboard data', 'error');
@@ -365,15 +365,15 @@ class ProfessionalDashboard {
         }
 
         const backendsHtml = backends.map(backend => `
-            <div style="padding: 1rem; border: 1px solid var(--glass-border); border-radius: var(--border-radius); margin-bottom: 0.75rem; background: var(--glass-bg); backdrop-filter: blur(10px);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0; color: var(--text-primary); font-family: var(--font-display);">${backend.name}</h4>
-                    <span style="padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 600; background: ${this.getStatusColor(backend.status)}; color: white;">
+            <div style="padding: 1.5rem; border: 1px solid var(--glass-border); border-radius: var(--border-radius); margin-bottom: 1rem; background: var(--glass-bg); backdrop-filter: blur(15px);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h4 style="margin: 0; color: var(--text-primary); font-family: var(--font-display); font-size: 1.1rem;">${backend.name}</h4>
+                    <span style="padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: ${this.getStatusColor(backend.status)}; color: white;">
                         ${backend.status}
                     </span>
                 </div>
-                <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                    <div style="margin-bottom: 0.25rem;"><i class="fas fa-microchip"></i> Qubits: ${backend.num_qubits || 'N/A'}</div>
+                <div style="font-size: 1rem; color: var(--text-secondary);">
+                    <div style="margin-bottom: 0.5rem;"><i class="fas fa-microchip"></i> Qubits: ${backend.num_qubits || 'N/A'}</div>
                     <div><i class="fas fa-clock"></i> Queue: ${backend.queue_length || 0} jobs</div>
                 </div>
             </div>
@@ -394,15 +394,15 @@ class ProfessionalDashboard {
         }
 
         const jobsHtml = jobs.slice(0, 5).map(job => `
-            <div style="padding: 1rem; border: 1px solid var(--glass-border); border-radius: var(--border-radius); margin-bottom: 0.75rem; background: var(--glass-bg); backdrop-filter: blur(10px);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h4 style="margin: 0; color: var(--text-primary); font-size: 0.875rem; font-family: var(--font-mono);">${job.job_id || 'Unknown Job'}</h4>
-                    <span style="padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 600; background: ${this.getJobStatusColor(job.status)}; color: white;">
+            <div style="padding: 1.5rem; border: 1px solid var(--glass-border); border-radius: var(--border-radius); margin-bottom: 1rem; background: var(--glass-bg); backdrop-filter: blur(15px);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h4 style="margin: 0; color: var(--text-primary); font-size: 1rem; font-family: var(--font-mono);">${job.job_id || 'Unknown Job'}</h4>
+                    <span style="padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: ${this.getJobStatusColor(job.status)}; color: white;">
                         ${job.status}
                     </span>
                 </div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                    <div style="margin-bottom: 0.25rem;"><i class="fas fa-server"></i> Backend: ${job.backend || 'N/A'}</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                    <div style="margin-bottom: 0.5rem;"><i class="fas fa-server"></i> Backend: ${job.backend || 'N/A'}</div>
                     <div><i class="fas fa-calendar"></i> Created: ${new Date(job.creation_date || Date.now()).toLocaleDateString()}</div>
                 </div>
             </div>
@@ -458,10 +458,10 @@ class ProfessionalDashboard {
                     y: y,
                     z: z,
                     marker: {
-                        size: 15,
-                        color: '#3498db',
+                        size: 18,
+                        color: '#4ecdc4',
                         symbol: 'circle',
-                        line: { color: 'white', width: 3 }
+                        line: { color: 'white', width: 4 }
                     },
                     name: 'Quantum State',
                     text: [`|ψ⟩ = ${stateData.alpha || 'α'}|0⟩ + ${stateData.beta || 'β'}|1⟩`],
@@ -472,30 +472,30 @@ class ProfessionalDashboard {
 
                 const layout = {
                     title: {
-                        text: '3D Bloch Sphere - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: '3D Bloch Sphere - Modern Interface',
+                        font: { size: 18, color: '#4ecdc4' }
                     },
                     scene: {
                         xaxis: { 
                             title: 'X', 
                             range: [-1.2, 1.2],
                             showgrid: true,
-                            gridcolor: 'rgba(52, 152, 219, 0.3)',
-                            titlefont: { color: '#3498db' }
+                            gridcolor: 'rgba(78, 205, 196, 0.4)',
+                            titlefont: { color: '#4ecdc4' }
                         },
                         yaxis: { 
                             title: 'Y', 
                             range: [-1.2, 1.2],
                             showgrid: true,
-                            gridcolor: 'rgba(52, 152, 219, 0.3)',
-                            titlefont: { color: '#3498db' }
+                            gridcolor: 'rgba(78, 205, 196, 0.4)',
+                            titlefont: { color: '#4ecdc4' }
                         },
                         zaxis: { 
                             title: 'Z', 
                             range: [-1.2, 1.2],
                             showgrid: true,
-                            gridcolor: 'rgba(52, 152, 219, 0.3)',
-                            titlefont: { color: '#3498db' }
+                            gridcolor: 'rgba(78, 205, 196, 0.4)',
+                            titlefont: { color: '#4ecdc4' }
                         },
                         aspectmode: 'cube',
                         camera: {
@@ -503,7 +503,7 @@ class ProfessionalDashboard {
                         },
                         bgcolor: 'rgba(0,0,0,0)'
                     },
-                    margin: { t: 50, b: 0, l: 0, r: 0 },
+                    margin: { t: 60, b: 0, l: 0, r: 0 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
                 };
@@ -560,27 +560,27 @@ class ProfessionalDashboard {
                     mode: 'lines+markers',
                     x: circuitData.x || [],
                     y: circuitData.y || [],
-                    line: { color: '#3498db', width: 3 },
-                    marker: { size: 10, color: '#2c3e50', symbol: 'circle' },
+                    line: { color: '#4ecdc4', width: 4 },
+                    marker: { size: 12, color: '#ff6b6b', symbol: 'circle' },
                     name: 'Quantum Circuit'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Quantum Circuit - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Quantum Circuit - Modern Interface',
+                        font: { size: 18, color: '#4ecdc4' }
                     },
                     xaxis: { 
                         title: 'Time Steps',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#4ecdc4' },
+                        gridcolor: 'rgba(78, 205, 196, 0.4)'
                     },
                     yaxis: { 
                         title: 'Qubits',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#4ecdc4' },
+                        gridcolor: 'rgba(78, 205, 196, 0.4)'
                     },
-                    margin: { t: 50, b: 50, l: 50, r: 50 },
+                    margin: { t: 60, b: 60, l: 60, r: 60 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
                 };
@@ -617,27 +617,27 @@ class ProfessionalDashboard {
                     mode: 'lines+markers',
                     x: perfData.timestamps || [],
                     y: perfData.values || [],
-                    line: { color: '#3498db', width: 3 },
-                    marker: { size: 8, color: '#2c3e50' },
+                    line: { color: '#4ecdc4', width: 4 },
+                    marker: { size: 10, color: '#ff6b6b' },
                     name: 'Performance'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Performance Metrics - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Performance Metrics - Modern Interface',
+                        font: { size: 18, color: '#4ecdc4' }
                     },
                     xaxis: { 
                         title: 'Time',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#4ecdc4' },
+                        gridcolor: 'rgba(78, 205, 196, 0.4)'
                     },
                     yaxis: { 
                         title: 'Performance',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#4ecdc4' },
+                        gridcolor: 'rgba(78, 205, 196, 0.4)'
                     },
-                    margin: { t: 50, b: 50, l: 50, r: 50 },
+                    margin: { t: 60, b: 60, l: 60, r: 60 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
                 };
@@ -672,24 +672,24 @@ class ProfessionalDashboard {
                 const plotData = [{
                     type: 'heatmap',
                     z: entData.matrix || [[0, 1], [1, 0]],
-                    colorscale: 'Blues',
+                    colorscale: 'Viridis',
                     name: 'Entanglement Matrix'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Entanglement Analysis - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Entanglement Analysis - Modern Interface',
+                        font: { size: 18, color: '#4ecdc4' }
                     },
                     xaxis: { 
                         title: 'Qubit 1',
-                        titlefont: { color: '#3498db' }
+                        titlefont: { color: '#4ecdc4' }
                     },
                     yaxis: { 
                         title: 'Qubit 2',
-                        titlefont: { color: '#3498db' }
+                        titlefont: { color: '#4ecdc4' }
                     },
-                    margin: { t: 50, b: 50, l: 50, r: 50 },
+                    margin: { t: 60, b: 60, l: 60, r: 60 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
                 };
@@ -725,26 +725,26 @@ class ProfessionalDashboard {
                     type: 'bar',
                     x: resultsData.labels || ['|0⟩', '|1⟩'],
                     y: resultsData.values || [0.5, 0.5],
-                    marker: { color: '#3498db' },
+                    marker: { color: '#4ecdc4' },
                     name: 'Measurement Results'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Measurement Results - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Measurement Results - Modern Interface',
+                        font: { size: 18, color: '#4ecdc4' }
                     },
                     xaxis: { 
                         title: 'States',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#4ecdc4' },
+                        gridcolor: 'rgba(78, 205, 196, 0.4)'
                     },
                     yaxis: { 
                         title: 'Probability',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#4ecdc4' },
+                        gridcolor: 'rgba(78, 205, 196, 0.4)'
                     },
-                    margin: { t: 50, b: 50, l: 50, r: 50 },
+                    margin: { t: 60, b: 60, l: 60, r: 60 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)'
                 };
@@ -777,15 +777,15 @@ class ProfessionalDashboard {
                 const stateData = data.state_data;
                 
                 const stateHtml = `
-                    <div style="text-align: center; padding: 1rem;">
-                        <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Current Quantum State</h4>
-                        <div style="background: var(--glass-bg); padding: 1rem; border-radius: var(--border-radius); border: 1px solid var(--glass-border);">
-                            <div style="font-family: var(--font-mono); font-size: 1.2rem; color: var(--text-accent); margin-bottom: 0.5rem;">
+                    <div style="text-align: center; padding: 1.5rem;">
+                        <h4 style="color: var(--text-primary); margin-bottom: 1.5rem; font-size: 1.25rem;">Current Quantum State</h4>
+                        <div style="background: var(--glass-bg); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid var(--glass-border); backdrop-filter: blur(15px);">
+                            <div style="font-family: var(--font-mono); font-size: 1.4rem; color: var(--text-accent); margin-bottom: 1rem;">
                                 |ψ⟩ = ${stateData.alpha || 'α'}|0⟩ + ${stateData.beta || 'β'}|1⟩
                             </div>
-                            <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                <div style="margin-bottom: 0.25rem;">Amplitude |α|²: ${stateData.alpha_squared || '0.5'}</div>
-                                <div style="margin-bottom: 0.25rem;">Amplitude |β|²: ${stateData.beta_squared || '0.5'}</div>
+                            <div style="font-size: 1rem; color: var(--text-secondary);">
+                                <div style="margin-bottom: 0.5rem;">Amplitude |α|²: ${stateData.alpha_squared || '0.5'}</div>
+                                <div style="margin-bottom: 0.5rem;">Amplitude |β|²: ${stateData.beta_squared || '0.5'}</div>
                                 <div>Phase: ${stateData.phase || '0°'}</div>
                             </div>
                         </div>
@@ -906,8 +906,8 @@ class ProfessionalDashboard {
             y: y,
             z: z,
             marker: {
-                size: 2,
-                color: 'rgba(52, 152, 219, 0.3)',
+                size: 3,
+                color: 'rgba(78, 205, 196, 0.4)',
                 symbol: 'circle'
             },
             name: 'Bloch Sphere',
@@ -942,7 +942,7 @@ class ProfessionalDashboard {
         const popupTitle = document.getElementById('popup-title');
         const popupContent = document.getElementById('popup-content');
         
-        popupTitle.textContent = `${widgetType.replace('-', ' ').toUpperCase()} - Professional Analytics`;
+        popupTitle.textContent = `${widgetType.replace('-', ' ').toUpperCase()} - Modern Interface`;
         
         // Clone widget content to popup
         const widgetContent = widget.querySelector('.widget-content');
@@ -1119,21 +1119,21 @@ class ProfessionalDashboard {
 
     getStatusColor(status) {
         const colors = {
-            'active': '#27ae60',
-            'inactive': '#95a5a6',
-            'maintenance': '#f39c12',
-            'error': '#e74c3c'
+            'active': '#56ab2f',
+            'inactive': '#6b7280',
+            'maintenance': '#f093fb',
+            'error': '#ff416c'
         };
         return colors[status] || colors.inactive;
     }
 
     getJobStatusColor(status) {
         const colors = {
-            'completed': '#27ae60',
-            'running': '#3498db',
-            'queued': '#f39c12',
-            'failed': '#e74c3c',
-            'cancelled': '#95a5a6'
+            'completed': '#56ab2f',
+            'running': '#4ecdc4',
+            'queued': '#f093fb',
+            'failed': '#ff416c',
+            'cancelled': '#6b7280'
         };
         return colors[status] || colors.queued;
     }
@@ -1142,11 +1142,11 @@ class ProfessionalDashboard {
         const widgetOrder = Array.from(document.querySelectorAll('.widget')).map(widget => 
             widget.getAttribute('data-widget')
         );
-        localStorage.setItem('quantum-spark-professional-widget-order', JSON.stringify(widgetOrder));
+        localStorage.setItem('quantum-spark-modern-widget-order', JSON.stringify(widgetOrder));
     }
 
     loadWidgetOrder() {
-        const savedOrder = localStorage.getItem('quantum-spark-professional-widget-order');
+        const savedOrder = localStorage.getItem('quantum-spark-modern-widget-order');
         if (savedOrder) {
             try {
                 const order = JSON.parse(savedOrder);
@@ -1169,10 +1169,10 @@ class ProfessionalDashboard {
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.professionalDashboard = new ProfessionalDashboard();
+    window.modernDashboard = new ModernDashboard();
     
     // Add team branding
-    console.log('🚀 Quantum Spark - Professional Dashboard');
-    console.log('👨‍💻 Professional Quantum Analytics');
-    console.log('🏆 Ready for professional quantum computing!');
+    console.log('🚀 Quantum Spark - Modern Dashboard');
+    console.log('👨‍💻 Modern Quantum Interface');
+    console.log('🏆 Ready for modern quantum computing!');
 });

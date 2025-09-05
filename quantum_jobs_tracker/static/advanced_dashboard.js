@@ -1,6 +1,6 @@
-// Quantum Spark - Professional Dashboard
-// Professional Interactive Dashboard with AI Integration
-class ProfessionalDashboard {
+// Quantum Spark - Advanced Dashboard
+// Advanced Interactive Dashboard with AI Integration
+class AdvancedDashboard {
     constructor() {
         this.state = {
             backends: [],
@@ -233,7 +233,7 @@ class ProfessionalDashboard {
             await this.fetchDashboardData();
             this.updateMetrics();
             this.updateAllWidgets();
-            this.showNotification('Professional dashboard loaded successfully', 'success');
+            this.showNotification('Advanced dashboard loaded successfully', 'success');
         } catch (error) {
             console.error('Error loading initial data:', error);
             this.showNotification('Failed to load dashboard data', 'error');
@@ -459,7 +459,7 @@ class ProfessionalDashboard {
                     z: z,
                     marker: {
                         size: 15,
-                        color: '#3498db',
+                        color: '#06b6d4',
                         symbol: 'circle',
                         line: { color: 'white', width: 3 }
                     },
@@ -472,30 +472,30 @@ class ProfessionalDashboard {
 
                 const layout = {
                     title: {
-                        text: '3D Bloch Sphere - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: '3D Bloch Sphere - Advanced Analytics',
+                        font: { size: 16, color: '#06b6d4' }
                     },
                     scene: {
                         xaxis: { 
                             title: 'X', 
                             range: [-1.2, 1.2],
                             showgrid: true,
-                            gridcolor: 'rgba(52, 152, 219, 0.3)',
-                            titlefont: { color: '#3498db' }
+                            gridcolor: 'rgba(6, 182, 212, 0.3)',
+                            titlefont: { color: '#06b6d4' }
                         },
                         yaxis: { 
                             title: 'Y', 
                             range: [-1.2, 1.2],
                             showgrid: true,
-                            gridcolor: 'rgba(52, 152, 219, 0.3)',
-                            titlefont: { color: '#3498db' }
+                            gridcolor: 'rgba(6, 182, 212, 0.3)',
+                            titlefont: { color: '#06b6d4' }
                         },
                         zaxis: { 
                             title: 'Z', 
                             range: [-1.2, 1.2],
                             showgrid: true,
-                            gridcolor: 'rgba(52, 152, 219, 0.3)',
-                            titlefont: { color: '#3498db' }
+                            gridcolor: 'rgba(6, 182, 212, 0.3)',
+                            titlefont: { color: '#06b6d4' }
                         },
                         aspectmode: 'cube',
                         camera: {
@@ -560,25 +560,25 @@ class ProfessionalDashboard {
                     mode: 'lines+markers',
                     x: circuitData.x || [],
                     y: circuitData.y || [],
-                    line: { color: '#3498db', width: 3 },
-                    marker: { size: 10, color: '#2c3e50', symbol: 'circle' },
+                    line: { color: '#06b6d4', width: 3 },
+                    marker: { size: 10, color: '#3b82f6', symbol: 'circle' },
                     name: 'Quantum Circuit'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Quantum Circuit - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Quantum Circuit - Advanced Analytics',
+                        font: { size: 16, color: '#06b6d4' }
                     },
                     xaxis: { 
                         title: 'Time Steps',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#06b6d4' },
+                        gridcolor: 'rgba(6, 182, 212, 0.3)'
                     },
                     yaxis: { 
                         title: 'Qubits',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#06b6d4' },
+                        gridcolor: 'rgba(6, 182, 212, 0.3)'
                     },
                     margin: { t: 50, b: 50, l: 50, r: 50 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
@@ -617,25 +617,25 @@ class ProfessionalDashboard {
                     mode: 'lines+markers',
                     x: perfData.timestamps || [],
                     y: perfData.values || [],
-                    line: { color: '#3498db', width: 3 },
-                    marker: { size: 8, color: '#2c3e50' },
+                    line: { color: '#06b6d4', width: 3 },
+                    marker: { size: 8, color: '#3b82f6' },
                     name: 'Performance'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Performance Metrics - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Performance Metrics - Advanced Analytics',
+                        font: { size: 16, color: '#06b6d4' }
                     },
                     xaxis: { 
                         title: 'Time',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#06b6d4' },
+                        gridcolor: 'rgba(6, 182, 212, 0.3)'
                     },
                     yaxis: { 
                         title: 'Performance',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#06b6d4' },
+                        gridcolor: 'rgba(6, 182, 212, 0.3)'
                     },
                     margin: { t: 50, b: 50, l: 50, r: 50 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
@@ -672,22 +672,22 @@ class ProfessionalDashboard {
                 const plotData = [{
                     type: 'heatmap',
                     z: entData.matrix || [[0, 1], [1, 0]],
-                    colorscale: 'Blues',
+                    colorscale: 'Viridis',
                     name: 'Entanglement Matrix'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Entanglement Analysis - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Entanglement Analysis - Advanced Analytics',
+                        font: { size: 16, color: '#06b6d4' }
                     },
                     xaxis: { 
                         title: 'Qubit 1',
-                        titlefont: { color: '#3498db' }
+                        titlefont: { color: '#06b6d4' }
                     },
                     yaxis: { 
                         title: 'Qubit 2',
-                        titlefont: { color: '#3498db' }
+                        titlefont: { color: '#06b6d4' }
                     },
                     margin: { t: 50, b: 50, l: 50, r: 50 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
@@ -725,24 +725,24 @@ class ProfessionalDashboard {
                     type: 'bar',
                     x: resultsData.labels || ['|0⟩', '|1⟩'],
                     y: resultsData.values || [0.5, 0.5],
-                    marker: { color: '#3498db' },
+                    marker: { color: '#06b6d4' },
                     name: 'Measurement Results'
                 }];
 
                 const layout = {
                     title: {
-                        text: 'Measurement Results - Professional Analytics',
-                        font: { size: 16, color: '#3498db' }
+                        text: 'Measurement Results - Advanced Analytics',
+                        font: { size: 16, color: '#06b6d4' }
                     },
                     xaxis: { 
                         title: 'States',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#06b6d4' },
+                        gridcolor: 'rgba(6, 182, 212, 0.3)'
                     },
                     yaxis: { 
                         title: 'Probability',
-                        titlefont: { color: '#3498db' },
-                        gridcolor: 'rgba(52, 152, 219, 0.3)'
+                        titlefont: { color: '#06b6d4' },
+                        gridcolor: 'rgba(6, 182, 212, 0.3)'
                     },
                     margin: { t: 50, b: 50, l: 50, r: 50 },
                     paper_bgcolor: 'rgba(0,0,0,0)',
@@ -784,8 +784,8 @@ class ProfessionalDashboard {
                                 |ψ⟩ = ${stateData.alpha || 'α'}|0⟩ + ${stateData.beta || 'β'}|1⟩
                             </div>
                             <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                <div style="margin-bottom: 0.25rem;">Amplitude |α|²: ${stateData.alpha_squared || '0.5'}</div>
-                                <div style="margin-bottom: 0.25rem;">Amplitude |β|²: ${stateData.beta_squared || '0.5'}</div>
+                                <div>Amplitude |α|²: ${stateData.alpha_squared || '0.5'}</div>
+                                <div>Amplitude |β|²: ${stateData.beta_squared || '0.5'}</div>
                                 <div>Phase: ${stateData.phase || '0°'}</div>
                             </div>
                         </div>
@@ -907,7 +907,7 @@ class ProfessionalDashboard {
             z: z,
             marker: {
                 size: 2,
-                color: 'rgba(52, 152, 219, 0.3)',
+                color: 'rgba(6, 182, 212, 0.3)',
                 symbol: 'circle'
             },
             name: 'Bloch Sphere',
@@ -942,7 +942,7 @@ class ProfessionalDashboard {
         const popupTitle = document.getElementById('popup-title');
         const popupContent = document.getElementById('popup-content');
         
-        popupTitle.textContent = `${widgetType.replace('-', ' ').toUpperCase()} - Professional Analytics`;
+        popupTitle.textContent = `${widgetType.replace('-', ' ').toUpperCase()} - Advanced Analytics`;
         
         // Clone widget content to popup
         const widgetContent = widget.querySelector('.widget-content');
@@ -1119,21 +1119,21 @@ class ProfessionalDashboard {
 
     getStatusColor(status) {
         const colors = {
-            'active': '#27ae60',
-            'inactive': '#95a5a6',
-            'maintenance': '#f39c12',
-            'error': '#e74c3c'
+            'active': '#10b981',
+            'inactive': '#6b7280',
+            'maintenance': '#f59e0b',
+            'error': '#ef4444'
         };
         return colors[status] || colors.inactive;
     }
 
     getJobStatusColor(status) {
         const colors = {
-            'completed': '#27ae60',
-            'running': '#3498db',
-            'queued': '#f39c12',
-            'failed': '#e74c3c',
-            'cancelled': '#95a5a6'
+            'completed': '#10b981',
+            'running': '#3b82f6',
+            'queued': '#f59e0b',
+            'failed': '#ef4444',
+            'cancelled': '#6b7280'
         };
         return colors[status] || colors.queued;
     }
@@ -1142,11 +1142,11 @@ class ProfessionalDashboard {
         const widgetOrder = Array.from(document.querySelectorAll('.widget')).map(widget => 
             widget.getAttribute('data-widget')
         );
-        localStorage.setItem('quantum-spark-professional-widget-order', JSON.stringify(widgetOrder));
+        localStorage.setItem('quantum-spark-advanced-widget-order', JSON.stringify(widgetOrder));
     }
 
     loadWidgetOrder() {
-        const savedOrder = localStorage.getItem('quantum-spark-professional-widget-order');
+        const savedOrder = localStorage.getItem('quantum-spark-advanced-widget-order');
         if (savedOrder) {
             try {
                 const order = JSON.parse(savedOrder);
@@ -1169,10 +1169,10 @@ class ProfessionalDashboard {
 
 // Initialize dashboard when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.professionalDashboard = new ProfessionalDashboard();
+    window.advancedDashboard = new AdvancedDashboard();
     
     // Add team branding
-    console.log('🚀 Quantum Spark - Professional Dashboard');
-    console.log('👨‍💻 Professional Quantum Analytics');
-    console.log('🏆 Ready for professional quantum computing!');
+    console.log('🚀 Quantum Spark - Advanced Dashboard');
+    console.log('👨‍💻 Advanced Quantum Analytics');
+    console.log('🏆 Ready for advanced quantum computing!');
 });
