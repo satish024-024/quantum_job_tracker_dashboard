@@ -31,13 +31,9 @@ class EnhancedQuantumDashboard {
 
         this.init();
         
-        // Fetch real data immediately with enhanced animations
+        // Fetch ONLY real data from IBM Quantum API endpoints
         setTimeout(() => {
-            this.updateAllWidgets();
-            this.updateQuantumMetrics();
-            this.updateCircuitVisualization();
-            this.updateMeasurementResults();
-            this.loadQuantumState();
+            this.fetchRealDataFromAPIs();
         }, 500);
     }
 
@@ -536,30 +532,127 @@ class EnhancedQuantumDashboard {
         }, 5000); // Update every 5 seconds
     }
 
-    // Update all widgets with animations
-    updateAllWidgets() {
-        this.updateQuantumMetrics();
-        this.updateBackends();
-        this.updateJobs();
-        this.updateCircuitVisualization();
-        this.updateMeasurementResults();
-        this.updateEntanglementData();
+    // Fetch ONLY real data from IBM Quantum API endpoints
+    async fetchRealDataFromAPIs() {
+        console.log('🔄 Fetching REAL IBM Quantum data from API endpoints...');
+        
+        try {
+            // Fetch real metrics data
+            await this.updateQuantumMetrics();
+            
+            // Fetch real backends data
+            await this.updateBackends();
+            
+            // Fetch real jobs data
+            await this.updateJobs();
+            
+            // Fetch real quantum state data
+            await this.fetchRealQuantumState();
+            
+            // Fetch real circuit data
+            await this.fetchRealCircuitData();
+            
+            // Fetch real measurement results
+            await this.fetchRealMeasurementResults();
+            
+            console.log('✅ All real data fetched successfully from IBM Quantum APIs');
+        } catch (error) {
+            console.error('❌ Error fetching real data:', error);
+            this.showRealDataError();
+        }
+    }
+    
+    // Show error when real data cannot be fetched
+    showRealDataError() {
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'real-data-error';
+        errorMessage.innerHTML = `
+            <div class="error-content">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Real IBM Quantum Data Required</h3>
+                <p>Please provide your IBM Quantum API token to access real quantum data.</p>
+                <p>No fake or simulated data will be displayed.</p>
+            </div>
+        `;
+        
+        // Insert error message at the top of the dashboard
+        const main = document.querySelector('.dashboard-main');
+        if (main) {
+            main.insertBefore(errorMessage, main.firstChild);
+        }
     }
 
-    // Enhanced quantum metrics update
-    updateQuantumMetrics() {
-        const metrics = {
-            'active-backends': Math.floor(Math.random() * 8) + 2,
-            'total-jobs': Math.floor(Math.random() * 100) + 50,
-            'running-jobs': Math.floor(Math.random() * 20) + 5,
-            'queued-jobs': Math.floor(Math.random() * 30) + 10
-        };
+    // Update all widgets with animations - DEPRECATED, use fetchRealDataFromAPIs instead
+    async updateAllWidgets() {
+        console.warn('⚠️ updateAllWidgets() is deprecated. Use fetchRealDataFromAPIs() for real data only.');
+        await this.fetchRealDataFromAPIs();
+    }
 
-        Object.entries(metrics).forEach(([metric, value]) => {
-            const element = document.getElementById(`${metric}-value`);
-            if (element) {
-                this.animateNumberChange(element, value);
+    // Enhanced quantum metrics update - REAL DATA ONLY
+    async updateQuantumMetrics() {
+        try {
+            const response = await fetch('/api/dashboard_metrics');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            const data = await response.json();
+            
+            if (data.real_data) {
+                const metrics = {
+                    'active-backends': data.active_backends,
+                    'total-jobs': data.total_jobs,
+                    'running-jobs': data.running_jobs,
+                    'queued-jobs': data.queued_jobs
+                };
+
+                Object.entries(metrics).forEach(([metric, value]) => {
+                    const element = document.getElementById(`${metric}-value`);
+                    if (element) {
+                        this.animateNumberChange(element, value);
+                    }
+                });
+                
+                // Update trend indicators with real data
+                this.updateTrendIndicators(data);
+            } else {
+                console.warn('No real data available for metrics');
+                this.showNoDataMessage();
+            }
+        } catch (error) {
+            console.error('Error fetching real metrics:', error);
+            this.showErrorState();
+        }
+    }
+    
+    // Update trend indicators with real data
+    updateTrendIndicators(data) {
+        const trendElements = document.querySelectorAll('.metric-trend span');
+        trendElements.forEach((element, index) => {
+            const trends = [
+                `+${data.active_backends} active`,
+                `+${data.total_jobs} total`,
+                `${data.running_jobs} running`,
+                `${data.queued_jobs} queued`
+            ];
+            if (trends[index]) {
+                element.textContent = trends[index];
+            }
+        });
+    }
+    
+    // Show no data message
+    showNoDataMessage() {
+        const metricValues = document.querySelectorAll('.metric-value');
+        metricValues.forEach(element => {
+            element.textContent = 'No Data';
+        });
+    }
+    
+    // Show error state
+    showErrorState() {
+        const metricValues = document.querySelectorAll('.metric-value');
+        metricValues.forEach(element => {
+            element.textContent = 'Error';
         });
     }
 
@@ -584,27 +677,34 @@ class EnhancedQuantumDashboard {
         }, stepDuration);
     }
 
-    // Update backends with animation
-    updateBackends() {
-        this.showLoadingAnimation('backends', 'Updating Quantum Backends...');
+    // Update backends with animation - REAL DATA ONLY
+    async updateBackends() {
+        this.showLoadingAnimation('backends', 'Loading Real Quantum Backends...');
         
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/backends');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                this.hideLoadingAnimation('backends');
+                this.populateBackends(data);
+            } else {
+                this.hideLoadingAnimation('backends');
+                this.showNoBackendsMessage();
+            }
+        } catch (error) {
+            console.error('Error fetching real backends:', error);
             this.hideLoadingAnimation('backends');
-            this.populateBackends();
-        }, 1500);
+            this.showBackendError();
+        }
     }
 
-    populateBackends() {
+    populateBackends(backends) {
         const backendsList = document.getElementById('backends-content');
         if (!backendsList) return;
-
-        const backends = [
-            { name: 'ibmq_qasm_simulator', status: 'online', qubits: 32, queue: 0 },
-            { name: 'ibm_oslo', status: 'online', qubits: 7, queue: 3 },
-            { name: 'ibm_nairobi', status: 'online', qubits: 7, queue: 1 },
-            { name: 'ibm_lagos', status: 'online', qubits: 7, queue: 2 },
-            { name: 'ibm_perth', status: 'online', qubits: 7, queue: 0 }
-        ];
 
         backendsList.innerHTML = '';
         
@@ -616,42 +716,74 @@ class EnhancedQuantumDashboard {
             }, index * 100);
         });
     }
+    
+    // Show no backends message
+    showNoBackendsMessage() {
+        const backendsList = document.getElementById('backends-content');
+        if (backendsList) {
+            backendsList.innerHTML = '<div class="no-data-message">No backends available</div>';
+        }
+    }
+    
+    // Show backend error
+    showBackendError() {
+        const backendsList = document.getElementById('backends-content');
+        if (backendsList) {
+            backendsList.innerHTML = '<div class="error-message">Error loading backends</div>';
+        }
+    }
 
     createBackendElement(backend) {
         const element = document.createElement('div');
         element.className = 'backend-item';
+        
+        // Handle real backend data structure
+        const name = backend.name || 'Unknown Backend';
+        const qubits = backend.num_qubits || backend.qubits || 5;
+        const status = backend.operational ? 'online' : 'offline';
+        const queue = backend.pending_jobs || backend.queue || 0;
+        
         element.innerHTML = `
             <div class="backend-info">
-                <h3>${backend.name}</h3>
-                <span class="backend-qubits">${backend.qubits} qubits</span>
+                <h3>${name}</h3>
+                <span class="backend-qubits">${qubits} qubits</span>
             </div>
             <div class="backend-status">
-                <span class="status-indicator ${backend.status}"></span>
-                <span class="queue-count">Queue: ${backend.queue}</span>
+                <span class="status-indicator ${status}"></span>
+                <span class="queue-count">Queue: ${queue}</span>
             </div>
         `;
         return element;
     }
 
-    // Update jobs with animation
-    updateJobs() {
-        this.showLoadingAnimation('jobs', 'Loading Active Jobs...');
+    // Update jobs with animation - REAL DATA ONLY
+    async updateJobs() {
+        this.showLoadingAnimation('jobs', 'Loading Real Quantum Jobs...');
         
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/jobs');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                this.hideLoadingAnimation('jobs');
+                this.populateJobs(data);
+            } else {
+                this.hideLoadingAnimation('jobs');
+                this.showNoJobsMessage();
+            }
+        } catch (error) {
+            console.error('Error fetching real jobs:', error);
             this.hideLoadingAnimation('jobs');
-            this.populateJobs();
-        }, 1200);
+            this.showJobsError();
+        }
     }
 
-    populateJobs() {
+    populateJobs(jobs) {
         const jobsBody = document.getElementById('jobs-body');
         if (!jobsBody) return;
-
-        const jobs = [
-            { id: 'QJ_2024_001', backend: 'ibm_oslo', status: 'running', qubits: 3, progress: 75 },
-            { id: 'QJ_2024_002', backend: 'ibm_nairobi', status: 'queued', qubits: 5, progress: 0 },
-            { id: 'QJ_2024_003', backend: 'ibm_lagos', status: 'completed', qubits: 2, progress: 100 }
-        ];
 
         jobsBody.innerHTML = '';
         
@@ -663,37 +795,210 @@ class EnhancedQuantumDashboard {
             }, index * 150);
         });
     }
+    
+    // Show no jobs message
+    showNoJobsMessage() {
+        const jobsBody = document.getElementById('jobs-body');
+        if (jobsBody) {
+            jobsBody.innerHTML = '<tr><td colspan="6" class="no-data-message">No jobs found</td></tr>';
+        }
+    }
+    
+    // Show jobs error
+    showJobsError() {
+        const jobsBody = document.getElementById('jobs-body');
+        if (jobsBody) {
+            jobsBody.innerHTML = '<tr><td colspan="6" class="error-message">Error loading jobs</td></tr>';
+        }
+    }
 
     createJobElement(job) {
         const element = document.createElement('tr');
         element.className = 'job-row';
+        
+        // Handle real job data structure
+        const jobId = job.id || job.job_id || 'Unknown';
+        const backend = job.backend || job.backend_name || 'Unknown';
+        const status = job.status || 'Unknown';
+        const qubits = job.qubits || 5; // Default to 5 qubits for IBM quantum computers
+        const progress = this.calculateJobProgress(status);
+        
         element.innerHTML = `
-            <td>${job.id}</td>
-            <td>${job.backend}</td>
-            <td><span class="status-badge ${job.status}">${job.status}</span></td>
-            <td>${job.qubits}</td>
+            <td>${jobId}</td>
+            <td>${backend}</td>
+            <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+            <td>${qubits}</td>
             <td>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${job.progress}%"></div>
+                    <div class="progress-bar" style="width: ${progress}%"></div>
                 </div>
             </td>
             <td>
-                <button class="action-btn" onclick="dashboard.viewJob('${job.id}')">
+                <button class="action-btn" onclick="dashboard.viewJob('${jobId}')">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
         `;
         return element;
     }
+    
+    // Calculate job progress based on status
+    calculateJobProgress(status) {
+        const statusProgress = {
+            'queued': 0,
+            'validating': 10,
+            'initializing': 25,
+            'running': 75,
+            'completed': 100,
+            'failed': 0,
+            'cancelled': 0
+        };
+        return statusProgress[status.toLowerCase()] || 0;
+    }
 
-    // Update circuit visualization
+    // Fetch real quantum state data from API
+    async fetchRealQuantumState() {
+        try {
+            const response = await fetch('/api/quantum_state_data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data.real_data) {
+                this.updateQuantumStateDisplay(data);
+            } else {
+                this.showNoRealDataMessage('quantum-state', 'No real quantum state data available');
+            }
+        } catch (error) {
+            console.error('Error fetching real quantum state:', error);
+            this.showNoRealDataMessage('quantum-state', 'Error loading quantum state data');
+        }
+    }
+    
+    // Fetch real circuit data from API
+    async fetchRealCircuitData() {
+        try {
+            const response = await fetch('/api/circuit_data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data.real_data) {
+                this.updateCircuitDisplay(data);
+            } else {
+                this.showNoRealDataMessage('circuit', 'No real circuit data available');
+            }
+        } catch (error) {
+            console.error('Error fetching real circuit data:', error);
+            this.showNoRealDataMessage('circuit', 'Error loading circuit data');
+        }
+    }
+    
+    // Fetch real measurement results from API
+    async fetchRealMeasurementResults() {
+        try {
+            const response = await fetch('/api/results');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data.real_data) {
+                this.updateResultsDisplay(data);
+            } else {
+                this.showNoRealDataMessage('results', 'No real measurement results available');
+            }
+        } catch (error) {
+            console.error('Error fetching real measurement results:', error);
+            this.showNoRealDataMessage('results', 'Error loading measurement results');
+        }
+    }
+    
+    // Show no real data message for specific widgets
+    showNoRealDataMessage(widgetType, message) {
+        const widget = document.querySelector(`.${widgetType}-widget .widget-content`);
+        if (widget) {
+            widget.innerHTML = `
+                <div class="no-real-data-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${message}</p>
+                    <p class="real-data-note">Real IBM Quantum data required</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Update quantum state display with real data
+    updateQuantumStateDisplay(data) {
+        const quantumStateDisplay = document.getElementById('quantum-state-display');
+        if (quantumStateDisplay) {
+            quantumStateDisplay.innerHTML = `
+                <div class="state-vector">
+                    <h3>Real Quantum State</h3>
+                    <div class="state-equation">|ψ⟩ = ${data.state_representation.alpha}|0⟩ + ${data.state_representation.beta}|1⟩</div>
+                    <div class="state-coefficients">
+                        <div>α = ${data.state_representation.alpha}</div>
+                        <div>β = ${data.state_representation.beta}</div>
+                    </div>
+                    <div class="real-data-indicator">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Real IBM Quantum Data</span>
+                    </div>
+                </div>
+            `;
+            quantumStateDisplay.style.display = 'block';
+        }
+    }
+    
+    // Update circuit display with real data
+    updateCircuitDisplay(data) {
+        const circuitContainer = document.getElementById('circuit-container');
+        if (circuitContainer) {
+            circuitContainer.innerHTML = `
+                <div class="real-circuit-data">
+                    <h3>Real Quantum Circuit</h3>
+                    <div class="circuit-info">
+                        <p><strong>Backend:</strong> ${data.backend || 'Unknown'}</p>
+                        <p><strong>Qubits:</strong> ${data.num_qubits || 'Unknown'}</p>
+                        <p><strong>Gates:</strong> ${data.num_gates || 'Unknown'}</p>
+                    </div>
+                    <div class="real-data-indicator">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Real IBM Quantum Data</span>
+                    </div>
+                </div>
+            `;
+            circuitContainer.style.display = 'block';
+        }
+    }
+    
+    // Update results display with real data
+    updateResultsDisplay(data) {
+        const resultsContent = document.getElementById('results-content');
+        if (resultsContent) {
+            resultsContent.innerHTML = `
+                <div class="real-results-data">
+                    <h3>Real Measurement Results</h3>
+                    <div class="results-info">
+                        <p><strong>Shots:</strong> ${data.shots || 'Unknown'}</p>
+                        <p><strong>Fidelity:</strong> ${data.fidelity || 'Unknown'}</p>
+                        <p><strong>Backend:</strong> ${data.backend || 'Unknown'}</p>
+                    </div>
+                    <div class="real-data-indicator">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Real IBM Quantum Data</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Update circuit visualization - DEPRECATED, use fetchRealCircuitData instead
     updateCircuitVisualization() {
-        this.showLoadingAnimation('circuit', 'Initializing 3D Quantum Circuit...');
-        
-        setTimeout(() => {
-            this.hideLoadingAnimation('circuit');
-            this.initializeCircuit();
-        }, 2000);
+        console.warn('⚠️ updateCircuitVisualization() is deprecated. Use fetchRealCircuitData() for real data only.');
+        this.fetchRealCircuitData();
     }
 
     initializeCircuit() {
@@ -704,165 +1009,95 @@ class EnhancedQuantumDashboard {
         }
     }
 
-    // Update measurement results
+    // Update measurement results - DEPRECATED, use fetchRealMeasurementResults instead
     updateMeasurementResults() {
-        this.showLoadingAnimation('results', 'Calculating Measurement Results...');
-        
-        setTimeout(() => {
-            this.hideLoadingAnimation('results');
-            this.populateResults();
-        }, 1800);
+        console.warn('⚠️ updateMeasurementResults() is deprecated. Use fetchRealMeasurementResults() for real data only.');
+        this.fetchRealMeasurementResults();
     }
 
-    populateResults() {
-        const resultsCanvas = document.getElementById('results-canvas');
-        const resultsShots = document.getElementById('results-shots');
-        const resultsFidelity = document.getElementById('results-fidelity');
-        
-        if (resultsCanvas) {
-            this.drawResultsChart(resultsCanvas);
-        }
-        
-        if (resultsShots) {
-            resultsShots.textContent = Math.floor(Math.random() * 1000) + 1000;
-        }
-        
-        if (resultsFidelity) {
-            resultsFidelity.textContent = (Math.random() * 0.1 + 0.9).toFixed(3);
-        }
-    }
+    // populateResults() - DEPRECATED, fake data method removed
+    // Use fetchRealMeasurementResults() for real data only
 
-    drawResultsChart(canvas) {
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, width, height);
-        
-        // Draw measurement results
-        const results = [0.6, 0.4]; // Example results
-        const barWidth = width / results.length;
-        
-        results.forEach((value, index) => {
-            const barHeight = value * height;
-            const x = index * barWidth;
-            const y = height - barHeight;
-            
-            // Create gradient
-            const gradient = ctx.createLinearGradient(0, y, 0, height);
-            gradient.addColorStop(0, '#00f5ff');
-            gradient.addColorStop(1, '#ff00ff');
-            
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, y, barWidth - 2, barHeight);
-        });
-    }
+    // drawResultsChart() - DEPRECATED, fake data method removed
+    // Use fetchRealMeasurementResults() for real data only
 
-    // Update entanglement data
+    // Update entanglement data - DEPRECATED, use fetchRealEntanglementData instead
     updateEntanglementData() {
-        this.showLoadingAnimation('entanglement', 'Calculating Entanglement...');
-        
-        setTimeout(() => {
-            this.hideLoadingAnimation('entanglement');
-            this.populateEntanglement();
-        }, 1600);
+        console.warn('⚠️ updateEntanglementData() is deprecated. Use fetchRealEntanglementData() for real data only.');
+        this.fetchRealEntanglementData();
     }
-
-    populateEntanglement() {
-        const entanglementCanvas = document.getElementById('entanglement-canvas');
-        const entanglementFidelity = document.getElementById('entanglement-fidelity');
-        
-        if (entanglementCanvas) {
-            this.drawEntanglementVisualization(entanglementCanvas);
+    
+    // Fetch real entanglement data from API
+    async fetchRealEntanglementData() {
+        try {
+            const response = await fetch('/api/quantum_state_data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data.real_data && data.entanglement !== undefined) {
+                this.updateEntanglementDisplay(data);
+            } else {
+                this.showNoRealDataMessage('entanglement', 'No real entanglement data available');
+            }
+        } catch (error) {
+            console.error('Error fetching real entanglement data:', error);
+            this.showNoRealDataMessage('entanglement', 'Error loading entanglement data');
         }
-        
-        if (entanglementFidelity) {
-            entanglementFidelity.textContent = (Math.random() * 0.1 + 0.9).toFixed(3);
+    }
+    
+    // Update entanglement display with real data
+    updateEntanglementDisplay(data) {
+        const entanglementContent = document.getElementById('entanglement-content');
+        if (entanglementContent) {
+            entanglementContent.innerHTML = `
+                <div class="real-entanglement-data">
+                    <h3>Real Entanglement Analysis</h3>
+                    <div class="entanglement-info">
+                        <p><strong>Entanglement:</strong> ${data.entanglement || 'Unknown'}</p>
+                        <p><strong>Fidelity:</strong> ${data.fidelity || 'Unknown'}</p>
+                        <p><strong>State:</strong> ${data.state_type || 'Unknown'}</p>
+                    </div>
+                    <div class="real-data-indicator">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Real IBM Quantum Data</span>
+                    </div>
+                </div>
+            `;
         }
     }
 
-    drawEntanglementVisualization(canvas) {
-        const ctx = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = canvas.height;
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, width, height);
-        
-        // Draw entanglement visualization
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const radius = 40;
-        
-        // Draw entangled particles
-        ctx.beginPath();
-        ctx.arc(centerX - 30, centerY, 15, 0, 2 * Math.PI);
-        ctx.fillStyle = '#00f5ff';
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.arc(centerX + 30, centerY, 15, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ff00ff';
-        ctx.fill();
-        
-        // Draw connection line
-        ctx.beginPath();
-        ctx.moveTo(centerX - 15, centerY);
-        ctx.lineTo(centerX + 15, centerY);
-        ctx.strokeStyle = '#00ff88';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    }
+    // populateEntanglement() - DEPRECATED, fake data method removed
+    // Use fetchRealEntanglementData() for real data only
 
-    // Load quantum state
+    // drawEntanglementVisualization() - DEPRECATED, fake data method removed
+    // Use fetchRealEntanglementData() for real data only
+
+    // Load quantum state - DEPRECATED, use fetchRealQuantumState instead
     loadQuantumState() {
-        this.showLoadingAnimation('quantum-state', 'Calculating Quantum State...');
-        
-        setTimeout(() => {
-            this.hideLoadingAnimation('quantum-state');
-            this.populateQuantumState();
-        }, 1400);
+        console.warn('⚠️ loadQuantumState() is deprecated. Use fetchRealQuantumState() for real data only.');
+        this.fetchRealQuantumState();
     }
 
-    populateQuantumState() {
-        const stateDisplay = document.getElementById('quantum-state-display');
-        if (!stateDisplay) return;
-        
-        const currentState = this.quantumStates[this.currentStateIndex];
-        
-        const stateEquation = stateDisplay.querySelector('.state-equation');
-        const alphaValue = stateDisplay.querySelector('.state-coefficients div:first-child');
-        const betaValue = stateDisplay.querySelector('.state-coefficients div:last-child');
-        
-        if (stateEquation) {
-            stateEquation.textContent = `|ψ⟩ = ${currentState.alpha.toFixed(3)}|0⟩ + ${currentState.beta.toFixed(3)}|1⟩`;
-        }
-        
-        if (alphaValue) {
-            alphaValue.textContent = `α = ${currentState.alpha.toFixed(3)}`;
-        }
-        
-        if (betaValue) {
-            betaValue.textContent = `β = ${currentState.beta.toFixed(3)}`;
-        }
-    }
+    // populateQuantumState() - DEPRECATED, fake data method removed
+    // Use fetchRealQuantumState() for real data only
 
-    // Refresh methods
+    // Refresh methods - Updated to use real data only
     refreshBackends() {
         this.updateBackends();
     }
 
     refreshResults() {
-        this.updateMeasurementResults();
+        this.fetchRealMeasurementResults();
     }
 
     refreshEntanglement() {
-        this.updateEntanglementData();
+        this.fetchRealEntanglementData();
     }
 
     calculateEntanglement() {
-        this.updateEntanglementData();
+        this.fetchRealEntanglementData();
     }
 
     toggleCircuitAnimation() {
