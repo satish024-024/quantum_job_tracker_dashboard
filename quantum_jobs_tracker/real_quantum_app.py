@@ -1046,7 +1046,12 @@ user_tokens = {}
 
 @app.route('/')
 def index():
-    """Render token input page first, then redirect to dashboard if token exists"""
+    """Render main dashboard"""
+    return render_template('index.html')
+
+@app.route('/token')
+def token_input():
+    """Render token input page"""
     return render_template('token_input.html')
 
 @app.route('/token', methods=['POST'])
@@ -1696,110 +1701,6 @@ def notifications():
                 time.sleep(10)  # Wait longer on error
     
     return Response(generate_notifications(), mimetype='text/event-stream')
-
-        # If connection error, return 503 with message
-        return jsonify({
-            "error": "Quantum manager connection failed",
-            "message": "Please check your API token and network connection"
-        }), 503
-
-        # Get real quantum state from the quantum manager
-        quantum_manager = app.quantum_manager
-        state_info = quantum_manager.get_quantum_state_info()
-        
-        if state_info:
-            # Use real quantum state data
-            bloch_vector = state_info.get('bloch_vector', [0, 0, 1])
-            state_rep = state_info.get('state_representation', {})
-            alpha_str = state_rep.get('alpha', '1.0')
-            beta_str = state_rep.get('beta', '0.0')
-            
-            # Parse complex numbers from strings
-            try:
-                if 'i' in alpha_str or 'j' in alpha_str:
-                    # Handle complex number strings like "(0.387+0.387j)"
-                    alpha_str_clean = alpha_str.replace('(', '').replace(')', '').replace('i', 'j')
-                    alpha = complex(alpha_str_clean)
-                else:
-                    alpha = float(alpha_str)
-            except (ValueError, TypeError):
-                alpha = 0.7071067811865475  # Default value
-                
-            try:
-                if 'i' in beta_str or 'j' in beta_str:
-                    # Handle complex number strings like "(0.387+0.387j)"
-                    beta_str_clean = beta_str.replace('(', '').replace(')', '').replace('i', 'j')
-                    beta = complex(beta_str_clean)
-                else:
-                    beta = float(beta_str)
-            except (ValueError, TypeError):
-                beta = 0.7071067811865475  # Default value
-            
-            # Create statevector from alpha and beta
-            statevector = [alpha, beta]
-            
-            # Calculate probabilities
-            probabilities = [abs(x)**2 for x in statevector]
-            
-            # Calculate phases
-            phases = [np.angle(x) for x in statevector]
-            
-            # Bloch sphere coordinates from real data
-            bloch_coordinates = {
-                "qubit0": {
-                    "x": float(bloch_vector[0]),
-                    "y": float(bloch_vector[1]), 
-                    "z": float(bloch_vector[2])
-                },
-                "qubit1": {
-                    "x": float(bloch_vector[0]) * 0.8,  # Slightly different for visualization
-                    "y": float(bloch_vector[1]) * 0.8,
-                    "z": float(bloch_vector[2]) * 0.8
-                }
-            }
-            
-            # Calculate entanglement using the quantum manager's methods
-            entanglement = 0.0
-            if hasattr(quantum_manager, 'calculate_entanglement'):
-                entanglement = quantum_manager.calculate_entanglement()
-            else:
-                # Simple entanglement measure based on state superposition
-                entanglement = 2 * abs(alpha) * abs(beta)
-            
-            # Get fidelity from state info
-            fidelity = state_info.get('fidelity', 0.95)
-            
-            # Real quantum state with actual IBM Quantum data
-            quantum_state = {
-                "statevector": {
-                    "real": [float(x.real) for x in statevector],
-                    "imag": [float(x.imag) for x in statevector]
-                },
-                "probability": [float(p) for p in probabilities],
-                "phase": [float(p) for p in phases],
-                "bloch_coordinates": bloch_coordinates,
-                "entanglement": float(entanglement),
-                "fidelity": float(fidelity),
-                "is_real_quantum": True,
-                "backend": state_info.get('backend', 'unknown'),
-                "timestamp": state_info.get('timestamp', time.time())
-            }
-            
-            return jsonify(quantum_state)
-        else:
-            # No fallback - require real quantum state
-            return jsonify({
-                "error": "No real quantum state available",
-                "message": "Cannot generate quantum state without real IBM Quantum connection"
-            }), 503
-            
-    except Exception as e:
-        print(f"Error in quantum state generation: {e}")
-        return jsonify({
-            "error": "Failed to generate quantum state",
-            "message": str(e)
-        }), 500
-
 @app.route('/api/circuit_data')
 def get_circuit_data():
     """API endpoint for real quantum circuit data from IBM Quantum"""
