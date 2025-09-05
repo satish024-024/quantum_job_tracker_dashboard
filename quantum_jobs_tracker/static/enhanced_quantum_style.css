@@ -499,13 +499,16 @@ html, body {
     transform: scale(0.95);
 }
 
-/* Enhanced Widgets Grid */
+/* Enhanced Widgets Grid - Fixed 4x2 Layout */
 .widgets-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 1.5rem;
     padding: 0 1rem;
     margin-bottom: 2rem;
+    max-width: 100%;
+    height: auto;
 }
 
 /* Enhanced Widget Styles */
@@ -1016,15 +1019,16 @@ input:focus, select:focus, textarea:focus {
     visibility: visible;
 }
 
-/* Enhanced Responsive Design */
+/* Enhanced Responsive Design - Maintain 4x2 Layout */
 @media (max-width: 1200px) {
     .widgets-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 1rem;
     }
     
     .metrics-section {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 1rem;
     }
 }
@@ -1060,7 +1064,8 @@ input:focus, select:focus, textarea:focus {
     }
     
     .widgets-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(4, 1fr);
         gap: 1rem;
         padding: 0 0.5rem;
     }
@@ -1140,8 +1145,14 @@ input:focus, select:focus, textarea:focus {
         font-size: 1rem;
     }
     
-    .metrics-section {
+    .widgets-grid {
         grid-template-columns: 1fr;
+        grid-template-rows: repeat(8, 1fr);
+        gap: 1rem;
+    }
+    
+    .metrics-section {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .hackathon-info {

@@ -11,15 +11,19 @@ import os
 def check_dependencies():
     """Check if required packages are installed"""
     required_packages = [
-        "qiskit",
-        "qiskit_ibm_provider",
-        "qiskit_ibm_runtime",
         "flask",
         "numpy",
         "matplotlib"
     ]
     
+    optional_packages = [
+        "qiskit",
+        "qiskit_ibm_provider",
+        "qiskit_ibm_runtime"
+    ]
+    
     missing_packages = []
+    missing_optional = []
     
     for package in required_packages:
         try:
@@ -27,15 +31,27 @@ def check_dependencies():
         except ImportError:
             missing_packages.append(package)
     
+    for package in optional_packages:
+        try:
+            __import__(package.replace("-", "_"))
+        except ImportError:
+            missing_optional.append(package)
+    
     if missing_packages:
         print("❌ Missing required packages:")
         for package in missing_packages:
             print(f"   - {package}")
-        print("\n🔧 Please run the setup script first:")
-        print("   python setup_ibm_quantum.py")
+        print("\n🔧 Please install required packages first:")
+        print("   pip install flask numpy matplotlib")
         return False
     
-    print("✅ All required packages are installed")
+    if missing_optional:
+        print("⚠️  Missing optional packages (IBM Quantum features will be limited):")
+        for package in missing_optional:
+            print(f"   - {package}")
+        print("\n💡 You can still use the dashboard with simulated data")
+    
+    print("✅ Core packages are installed")
     return True
 
 def main():

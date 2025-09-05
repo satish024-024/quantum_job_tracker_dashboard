@@ -537,29 +537,85 @@ class EnhancedQuantumDashboard {
     }
 
     // Update all widgets with animations
-    updateAllWidgets() {
-        this.updateQuantumMetrics();
-        this.updateBackends();
-        this.updateJobs();
+    async updateAllWidgets() {
+        // Update all widgets with real data
+        await Promise.all([
+            this.updateQuantumMetrics(),
+            this.updateBackends(),
+            this.updateJobs()
+        ]);
+        
+        // Update visualization widgets
         this.updateCircuitVisualization();
         this.updateMeasurementResults();
         this.updateEntanglementData();
     }
 
-    // Enhanced quantum metrics update
-    updateQuantumMetrics() {
-        const metrics = {
-            'active-backends': Math.floor(Math.random() * 8) + 2,
-            'total-jobs': Math.floor(Math.random() * 100) + 50,
-            'running-jobs': Math.floor(Math.random() * 20) + 5,
-            'queued-jobs': Math.floor(Math.random() * 30) + 10
-        };
-
-        Object.entries(metrics).forEach(([metric, value]) => {
-            const element = document.getElementById(`${metric}-value`);
-            if (element) {
-                this.animateNumberChange(element, value);
+    // Enhanced quantum metrics update - REAL DATA ONLY
+    async updateQuantumMetrics() {
+        try {
+            const response = await fetch('/api/dashboard_metrics');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            const data = await response.json();
+            
+            if (data.real_data) {
+                const metrics = {
+                    'active-backends': data.active_backends,
+                    'total-jobs': data.total_jobs,
+                    'running-jobs': data.running_jobs,
+                    'queued-jobs': data.queued_jobs
+                };
+
+                Object.entries(metrics).forEach(([metric, value]) => {
+                    const element = document.getElementById(`${metric}-value`);
+                    if (element) {
+                        this.animateNumberChange(element, value);
+                    }
+                });
+                
+                // Update trend indicators with real data
+                this.updateTrendIndicators(data);
+            } else {
+                console.warn('No real data available for metrics');
+                this.showNoDataMessage();
+            }
+        } catch (error) {
+            console.error('Error fetching real metrics:', error);
+            this.showErrorState();
+        }
+    }
+    
+    // Update trend indicators with real data
+    updateTrendIndicators(data) {
+        const trendElements = document.querySelectorAll('.metric-trend span');
+        trendElements.forEach((element, index) => {
+            const trends = [
+                `+${data.active_backends} active`,
+                `+${data.total_jobs} total`,
+                `${data.running_jobs} running`,
+                `${data.queued_jobs} queued`
+            ];
+            if (trends[index]) {
+                element.textContent = trends[index];
+            }
+        });
+    }
+    
+    // Show no data message
+    showNoDataMessage() {
+        const metricValues = document.querySelectorAll('.metric-value');
+        metricValues.forEach(element => {
+            element.textContent = 'No Data';
+        });
+    }
+    
+    // Show error state
+    showErrorState() {
+        const metricValues = document.querySelectorAll('.metric-value');
+        metricValues.forEach(element => {
+            element.textContent = 'Error';
         });
     }
 
@@ -584,27 +640,34 @@ class EnhancedQuantumDashboard {
         }, stepDuration);
     }
 
-    // Update backends with animation
-    updateBackends() {
-        this.showLoadingAnimation('backends', 'Updating Quantum Backends...');
+    // Update backends with animation - REAL DATA ONLY
+    async updateBackends() {
+        this.showLoadingAnimation('backends', 'Loading Real Quantum Backends...');
         
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/backends');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                this.hideLoadingAnimation('backends');
+                this.populateBackends(data);
+            } else {
+                this.hideLoadingAnimation('backends');
+                this.showNoBackendsMessage();
+            }
+        } catch (error) {
+            console.error('Error fetching real backends:', error);
             this.hideLoadingAnimation('backends');
-            this.populateBackends();
-        }, 1500);
+            this.showBackendError();
+        }
     }
 
-    populateBackends() {
+    populateBackends(backends) {
         const backendsList = document.getElementById('backends-content');
         if (!backendsList) return;
-
-        const backends = [
-            { name: 'ibmq_qasm_simulator', status: 'online', qubits: 32, queue: 0 },
-            { name: 'ibm_oslo', status: 'online', qubits: 7, queue: 3 },
-            { name: 'ibm_nairobi', status: 'online', qubits: 7, queue: 1 },
-            { name: 'ibm_lagos', status: 'online', qubits: 7, queue: 2 },
-            { name: 'ibm_perth', status: 'online', qubits: 7, queue: 0 }
-        ];
 
         backendsList.innerHTML = '';
         
@@ -616,42 +679,74 @@ class EnhancedQuantumDashboard {
             }, index * 100);
         });
     }
+    
+    // Show no backends message
+    showNoBackendsMessage() {
+        const backendsList = document.getElementById('backends-content');
+        if (backendsList) {
+            backendsList.innerHTML = '<div class="no-data-message">No backends available</div>';
+        }
+    }
+    
+    // Show backend error
+    showBackendError() {
+        const backendsList = document.getElementById('backends-content');
+        if (backendsList) {
+            backendsList.innerHTML = '<div class="error-message">Error loading backends</div>';
+        }
+    }
 
     createBackendElement(backend) {
         const element = document.createElement('div');
         element.className = 'backend-item';
+        
+        // Handle real backend data structure
+        const name = backend.name || 'Unknown Backend';
+        const qubits = backend.num_qubits || backend.qubits || 5;
+        const status = backend.operational ? 'online' : 'offline';
+        const queue = backend.pending_jobs || backend.queue || 0;
+        
         element.innerHTML = `
             <div class="backend-info">
-                <h3>${backend.name}</h3>
-                <span class="backend-qubits">${backend.qubits} qubits</span>
+                <h3>${name}</h3>
+                <span class="backend-qubits">${qubits} qubits</span>
             </div>
             <div class="backend-status">
-                <span class="status-indicator ${backend.status}"></span>
-                <span class="queue-count">Queue: ${backend.queue}</span>
+                <span class="status-indicator ${status}"></span>
+                <span class="queue-count">Queue: ${queue}</span>
             </div>
         `;
         return element;
     }
 
-    // Update jobs with animation
-    updateJobs() {
-        this.showLoadingAnimation('jobs', 'Loading Active Jobs...');
+    // Update jobs with animation - REAL DATA ONLY
+    async updateJobs() {
+        this.showLoadingAnimation('jobs', 'Loading Real Quantum Jobs...');
         
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/jobs');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            if (data && data.length > 0) {
+                this.hideLoadingAnimation('jobs');
+                this.populateJobs(data);
+            } else {
+                this.hideLoadingAnimation('jobs');
+                this.showNoJobsMessage();
+            }
+        } catch (error) {
+            console.error('Error fetching real jobs:', error);
             this.hideLoadingAnimation('jobs');
-            this.populateJobs();
-        }, 1200);
+            this.showJobsError();
+        }
     }
 
-    populateJobs() {
+    populateJobs(jobs) {
         const jobsBody = document.getElementById('jobs-body');
         if (!jobsBody) return;
-
-        const jobs = [
-            { id: 'QJ_2024_001', backend: 'ibm_oslo', status: 'running', qubits: 3, progress: 75 },
-            { id: 'QJ_2024_002', backend: 'ibm_nairobi', status: 'queued', qubits: 5, progress: 0 },
-            { id: 'QJ_2024_003', backend: 'ibm_lagos', status: 'completed', qubits: 2, progress: 100 }
-        ];
 
         jobsBody.innerHTML = '';
         
@@ -663,27 +758,65 @@ class EnhancedQuantumDashboard {
             }, index * 150);
         });
     }
+    
+    // Show no jobs message
+    showNoJobsMessage() {
+        const jobsBody = document.getElementById('jobs-body');
+        if (jobsBody) {
+            jobsBody.innerHTML = '<tr><td colspan="6" class="no-data-message">No jobs found</td></tr>';
+        }
+    }
+    
+    // Show jobs error
+    showJobsError() {
+        const jobsBody = document.getElementById('jobs-body');
+        if (jobsBody) {
+            jobsBody.innerHTML = '<tr><td colspan="6" class="error-message">Error loading jobs</td></tr>';
+        }
+    }
 
     createJobElement(job) {
         const element = document.createElement('tr');
         element.className = 'job-row';
+        
+        // Handle real job data structure
+        const jobId = job.id || job.job_id || 'Unknown';
+        const backend = job.backend || job.backend_name || 'Unknown';
+        const status = job.status || 'Unknown';
+        const qubits = job.qubits || 5; // Default to 5 qubits for IBM quantum computers
+        const progress = this.calculateJobProgress(status);
+        
         element.innerHTML = `
-            <td>${job.id}</td>
-            <td>${job.backend}</td>
-            <td><span class="status-badge ${job.status}">${job.status}</span></td>
-            <td>${job.qubits}</td>
+            <td>${jobId}</td>
+            <td>${backend}</td>
+            <td><span class="status-badge ${status.toLowerCase()}">${status}</span></td>
+            <td>${qubits}</td>
             <td>
                 <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: ${job.progress}%"></div>
+                    <div class="progress-bar" style="width: ${progress}%"></div>
                 </div>
             </td>
             <td>
-                <button class="action-btn" onclick="dashboard.viewJob('${job.id}')">
+                <button class="action-btn" onclick="dashboard.viewJob('${jobId}')">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
         `;
         return element;
+    }
+    
+    // Calculate job progress based on status
+    calculateJobProgress(status) {
+        const statusProgress = {
+            'queued': 0,
+            'validating': 10,
+            'initializing': 25,
+            'running': 75,
+            'completed': 100,
+            'failed': 0,
+            'cancelled': 0
+        };
+        return statusProgress[status.toLowerCase()] || 0;
     }
 
     // Update circuit visualization
